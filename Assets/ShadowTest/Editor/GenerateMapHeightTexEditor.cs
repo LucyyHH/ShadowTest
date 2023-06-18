@@ -36,6 +36,8 @@ namespace ShadowTest.Editor {
         private float _heightOffsetSinMin = 0.1f;
         private float _heightOffsetSinMax = 0.5f;
         private int _checkLength = 5;
+        
+        private float3 _lightDir = float3.zero;
 
         private static readonly int HeightTex = Shader.PropertyToID("_HeightTex");
         private static readonly int HeightTexLeft = Shader.PropertyToID("_HeightTexLeft");
@@ -178,6 +180,8 @@ namespace ShadowTest.Editor {
                     _checkLength = EditorGUILayout.IntField ("高度偏移检查的距离", _checkLength);
                     EditorGUILayout.Space ();
                 }
+
+                _lightDir = EditorGUILayout.Vector3Field("灯光方向", _lightDir);
 
                 _mapMaterial = (Material) EditorGUILayout.ObjectField ("Material:", _mapMaterial, typeof (Material), true);
                 EditorGUILayout.Space ();
@@ -370,7 +374,7 @@ namespace ShadowTest.Editor {
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
             calculateHeightHandle.Complete();
             usedTriangleInfoList.Dispose ();
-
+            
             var curOffsetHeightArray = new NativeArray<float> (pixelCount, Allocator);
             var maxOffset = 0f;
             if (_needHeightOffset) {
@@ -399,6 +403,19 @@ namespace ShadowTest.Editor {
                 }
             }
         
+            // 更改坐标轴
+            var newCurHeightArray = new NativeArray<float> (pixelCount, Allocator);
+            var changeAxisJob = new ChangeAxisJob
+            {
+                CurHeightArray = curHeightArray,
+                ResolutionX = _resolutionX,
+                ResolutionY = _resolutionY,
+                LightDir = _lightDir,
+                CurChangeHeightArray = newCurHeightArray
+            };
+            var changeAxisHandle = changeAxisJob.Schedule(pixelCount, 64);
+            changeAxisHandle.Complete();
+            
             var pixelIndex = 0;
             for (var y = 0; y < _resolutionY; y++) {
                 for (var x = 0; x < _resolutionX; x++) {
@@ -636,6 +653,34 @@ namespace ShadowTest.Editor {
                 } else {
                     CurOffsetHeightArray[index] = 0;
                 }
+            }
+        }
+        
+        /// <summary>
+        /// 改变坐标轴
+        /// </summary>
+        [BurstCompile]
+        private struct ChangeAxisJob : IJobParallelFor
+        {
+            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray;
+        
+            [ReadOnly] public int ResolutionX;
+            [ReadOnly] public int ResolutionY;
+            
+            [ReadOnly] public float3 LightDir;
+
+            public NativeArray<float> CurChangeHeightArray;
+
+            // Each Execute call processes only an individual index.
+            public void Execute(int index) {
+                var xIndex = index % ResolutionX;
+                var yIndex = index / ResolutionX;
+
+                var height = CurHeightArray[index].Height;
+                
+                var newIndex =  + (-xIndex / height)
+
+                CurChangeHeightArray[newIndex] = 0;
             }
         }
 
