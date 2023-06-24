@@ -359,7 +359,9 @@ namespace ShadowTest.Editor {
             var texture2D = new Texture2D (_resolutionX, _resolutionY, TextureFormat.RG16, 0, true);
 
             var pixelCount = _resolutionX * _resolutionY;
-            var curHeightArray = new NativeArray<TriangleHeightInfo> (pixelCount, Allocator);
+            var curHeightArray1 = new NativeArray<TriangleHeightInfo> (pixelCount, Allocator);
+            var curHeightArray2 = new NativeArray<TriangleHeightInfo> (pixelCount, Allocator);
+            var curHeightArray3 = new NativeArray<TriangleHeightInfo> (pixelCount, Allocator);
             var calculateHeightJob = new CalculateHeightJob
             {
                 TriangleInfoArray = usedTriangleInfoList.AsArray (),
@@ -369,7 +371,9 @@ namespace ShadowTest.Editor {
                 Left = mapBoundary.Left,
                 Bottom = mapBoundary.Bottom,
                 Back = mapBoundary.Back,
-                CurHeightArray = curHeightArray,
+                CurHeightArray1 = curHeightArray1,
+                CurHeightArray2 = curHeightArray2,
+                CurHeightArray3 = curHeightArray3,
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
             calculateHeightHandle.Complete();
@@ -380,7 +384,9 @@ namespace ShadowTest.Editor {
             if (_needHeightOffset) {
                 var calculateOffsetHeightJob = new CalculateOffsetHeightJob
                 {
-                    CurHeightArray = curHeightArray,
+                    CurHeightArray1 = curHeightArray1,
+                    CurHeightArray2 = curHeightArray2,
+                    CurHeightArray3 = curHeightArray3,
                     ResolutionX = _resolutionX,
                     ResolutionY = _resolutionY,
                     CheckHeightOffsetLayer = _checkHeightOffsetLayer,
@@ -404,7 +410,7 @@ namespace ShadowTest.Editor {
             }
         
             // 更改坐标轴
-            var newCurHeightArray = new NativeArray<float> (pixelCount, Allocator);
+            /*var newCurHeightArray = new NativeArray<float> (pixelCount, Allocator);
             var changeAxisJob = new ChangeAxisJob
             {
                 CurHeightArray = curHeightArray,
@@ -414,17 +420,19 @@ namespace ShadowTest.Editor {
                 CurChangeHeightArray = newCurHeightArray
             };
             var changeAxisHandle = changeAxisJob.Schedule(pixelCount, 64);
-            changeAxisHandle.Complete();
+            changeAxisHandle.Complete();*/
             
             var pixelIndex = 0;
             for (var y = 0; y < _resolutionY; y++) {
                 for (var x = 0; x < _resolutionX; x++) {
-                    texture2D.SetPixel (x, y, new Color (curHeightArray[pixelIndex].Height / high, curOffsetHeightArray[pixelIndex] / maxOffset, 0));
+                    texture2D.SetPixel (x, y, new Color (curHeightArray1[pixelIndex].Height / high, curHeightArray2[pixelIndex].Height / high, curHeightArray3[pixelIndex].Height / high, curOffsetHeightArray[pixelIndex] / maxOffset));
                     pixelIndex++;
                 }
             }
 
-            curHeightArray.Dispose ();
+            curHeightArray1.Dispose ();
+            curHeightArray2.Dispose ();
+            curHeightArray3.Dispose ();
             curOffsetHeightArray.Dispose ();
         
             var costTime = DateTime.Now.Subtract (curTime).TotalMilliseconds / 1000d;
@@ -534,68 +542,114 @@ namespace ShadowTest.Editor {
             [ReadOnly] public float Back;
             [ReadOnly] public float Bottom;
 
-            public NativeArray<TriangleHeightInfo> CurHeightArray;
+            public NativeArray<TriangleHeightInfo> CurHeightArray1;
+            public NativeArray<TriangleHeightInfo> CurHeightArray2;
+            public NativeArray<TriangleHeightInfo> CurHeightArray3;
         
             // Each Execute call processes only an individual index.
             public void Execute(int index) {
                 var xIndex = index % ResolutionX;
                 var yIndex = index / ResolutionX;
-                var curPosX = Left + (0.5f + xIndex) * StepX;
-                var curPosY = Back + (0.5f + yIndex) * StepY;
-
-                var curH = 0f;
-                var offset = false;
-                foreach(var triangleInfo in TriangleInfoArray) {
+                
+                var calculateHeights = new NativeArray<CalculateHeightStruct>(3, Allocator.Temp);
+                calculateHeights[0] = new CalculateHeightStruct
+                {
+                    CurPosX = Left + (0.2f + xIndex) * StepX,
+                    CurPosY = Back + (0.2f + yIndex) * StepY,
+                    CurH = 0f,
+                    Offset = false
+                };
+                calculateHeights[1] = new CalculateHeightStruct
+                {
+                    CurPosX = Left + (0.5f + xIndex) * StepX,
+                    CurPosY = Back + (0.5f + yIndex) * StepY,
+                    CurH = 0f,
+                    Offset = false
+                };
+                calculateHeights[2] = new CalculateHeightStruct
+                {
+                    CurPosX = Left + (0.8f + xIndex) * StepX,
+                    CurPosY = Back + (0.8f + yIndex) * StepY,
+                    CurH = 0f,
+                    Offset = false
+                };
+                foreach(var triangleInfo in TriangleInfoArray)
+                {
                     if (triangleInfo.Type == TriangleType.Unavailable) {
                         continue;
                     }
-                
-                    // 是否在包围盒里
-                    if (curPosX < triangleInfo.Left || curPosX > triangleInfo.Right ||
-                        curPosY < triangleInfo.Back || curPosY > triangleInfo.Front) {
-                        continue;
-                    }
 
-                    // 检测是否在三角形内
-                    var tempPoint = new float3 (curPosX, 0, curPosY);
-                    if (!IsInsideTriangle (tempPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
-                        continue;
-                    }
+                    foreach (var value in calculateHeights)
+                    {
+                        var curStruct = value;
+                        
+                        // 是否在包围盒里
+                        if (curStruct.CurPosX < triangleInfo.Left || curStruct.CurPosX > triangleInfo.Right ||
+                            curStruct.CurPosY < triangleInfo.Back || curStruct.CurPosY > triangleInfo.Front) {
+                            continue;
+                        }
 
-                    // 如果在三角形内,则计算高度
-                    if (curPosX - triangleInfo.Vertices1.x > 0.001f || curPosY - triangleInfo.Vertices1.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices1.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices1.z;
-                        tempPoint.y = triangleInfo.Vertices1.y;
-                    } else if (curPosX - triangleInfo.Vertices2.x > 0.001f || curPosY - triangleInfo.Vertices2.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices2.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices2.z;
-                        tempPoint.y = triangleInfo.Vertices2.y;
-                    } if (curPosX - triangleInfo.Vertices3.x > 0.001f || curPosY - triangleInfo.Vertices3.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices3.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices3.z;
-                        tempPoint.y = triangleInfo.Vertices3.y;
-                    } 
+                        // 检测是否在三角形内
+                        var tempPoint = new float3 (curStruct.CurPosX, 0, curStruct.CurPosY);
+                        if (!IsInsideTriangle (tempPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
+                            continue;
+                        }
 
-                    var tempH =
-                        -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
-                        triangleInfo.Normal.y + tempPoint.y - Bottom;
+                        // 如果在三角形内,则计算高度
+                        if (curStruct.CurPosX - triangleInfo.Vertices1.x > 0.001f || curStruct.CurPosY - triangleInfo.Vertices1.z > 0.001f) {
+                            tempPoint.x = curStruct.CurPosX - triangleInfo.Vertices1.x;
+                            tempPoint.z = curStruct.CurPosY - triangleInfo.Vertices1.z;
+                            tempPoint.y = triangleInfo.Vertices1.y;
+                        } else if (curStruct.CurPosX - triangleInfo.Vertices2.x > 0.001f || curStruct.CurPosY - triangleInfo.Vertices2.z > 0.001f) {
+                            tempPoint.x = curStruct.CurPosX - triangleInfo.Vertices2.x;
+                            tempPoint.z = curStruct.CurPosY - triangleInfo.Vertices2.z;
+                            tempPoint.y = triangleInfo.Vertices2.y;
+                        } if (curStruct.CurPosX - triangleInfo.Vertices3.x > 0.001f || curStruct.CurPosY - triangleInfo.Vertices3.z > 0.001f) {
+                            tempPoint.x = curStruct.CurPosX - triangleInfo.Vertices3.x;
+                            tempPoint.z = curStruct.CurPosY - triangleInfo.Vertices3.z;
+                            tempPoint.y = triangleInfo.Vertices3.y;
+                        } 
 
-                    if (curH < tempH) {
-                        curH = tempH;
-                    }
+                        var tempH =
+                            -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
+                            triangleInfo.Normal.y + tempPoint.y - Bottom;
 
-                    if (!offset && triangleInfo.Type == TriangleType.Offset) {
-                        offset = true;
+                        if (curStruct.CurH < tempH) {
+                            curStruct.CurH = tempH;
+                        }
+
+                        if (!curStruct.Offset && triangleInfo.Type == TriangleType.Offset) {
+                            curStruct.Offset = true;
+                        }
                     }
                 }
 
-                CurHeightArray[index] = new TriangleHeightInfo
+                CurHeightArray1[index] = new TriangleHeightInfo
                 {
-                    Height = curH,
-                    Offset = offset
+                    Height = calculateHeights[1].CurH,
+                    Offset = calculateHeights[1].Offset
+                };
+                CurHeightArray2[index] = new TriangleHeightInfo
+                {
+                    Height = calculateHeights[2].CurH,
+                    Offset = calculateHeights[2].Offset
+                };
+                CurHeightArray3[index] = new TriangleHeightInfo
+                {
+                    Height = calculateHeights[3].CurH,
+                    Offset = calculateHeights[3].Offset
                 };
             }
+        }
+        /// <summary>
+        /// 计算高度的结构体
+        /// </summary>
+        private struct CalculateHeightStruct
+        {
+            public float CurPosX;
+            public float CurPosY;
+            public float CurH;
+            public bool Offset;
         }
     
         /// <summary>
@@ -604,7 +658,9 @@ namespace ShadowTest.Editor {
         [BurstCompile]
         private struct CalculateOffsetHeightJob : IJobParallelFor
         {
-            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray;
+            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray1;
+            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray2;
+            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray3;
         
             [ReadOnly] public int ResolutionX;
             [ReadOnly] public int ResolutionY;
@@ -628,23 +684,31 @@ namespace ShadowTest.Editor {
                 var yIndex = index / ResolutionX;
 
                 var curSin = 0f;
-                var triangleHeightInfo = CurHeightArray[index];
+                var triangleHeightInfo = CurHeightArray1[index];
                 var curH = triangleHeightInfo.Height;
                 if (curH > Bottom) {
                     for (var i = 1; i <= CheckLength; i++) {
                         if (xIndex - i >= 0) {
-                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray[index - i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index - i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray2[index - i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray3[index - i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
                         }
                         if (xIndex + i < ResolutionX) {
-                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray[index + i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index + i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray2[index + i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray3[index + i], StepX, HeightOffsetSinMin, HeightOffsetSinMax);
                         }
 
                         if (yIndex - i >= 0) {
-                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray[index - i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index - i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray2[index - i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray3[index - i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
                         }
 
                         if (yIndex + i < ResolutionY) {
-                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray[index + i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index + i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray2[index + i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
+                            CalculateCurSin (ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray3[index + i * ResolutionX], StepY, HeightOffsetSinMin, HeightOffsetSinMax);
                         }
                     }
 
@@ -678,7 +742,7 @@ namespace ShadowTest.Editor {
 
                 var height = CurHeightArray[index].Height;
                 
-                var newIndex =  + (-xIndex / height)
+                var newIndex = 0 /*+ (-xIndex / height)*/;
 
                 CurChangeHeightArray[newIndex] = 0;
             }
