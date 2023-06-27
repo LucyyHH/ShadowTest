@@ -402,20 +402,7 @@ namespace ShadowTest.Editor {
                     }
                 }
             }
-        
-            // 更改坐标轴
-            var newCurHeightArray = new NativeArray<float> (pixelCount, Allocator);
-            var changeAxisJob = new ChangeAxisJob
-            {
-                CurHeightArray = curHeightArray,
-                ResolutionX = _resolutionX,
-                ResolutionY = _resolutionY,
-                LightDir = _lightDir,
-                CurChangeHeightArray = newCurHeightArray
-            };
-            var changeAxisHandle = changeAxisJob.Schedule(pixelCount, 64);
-            changeAxisHandle.Complete();
-            
+
             var pixelIndex = 0;
             for (var y = 0; y < _resolutionY; y++) {
                 for (var x = 0; x < _resolutionX; x++) {
@@ -653,34 +640,6 @@ namespace ShadowTest.Editor {
                 } else {
                     CurOffsetHeightArray[index] = 0;
                 }
-            }
-        }
-        
-        /// <summary>
-        /// 改变坐标轴
-        /// </summary>
-        [BurstCompile]
-        private struct ChangeAxisJob : IJobParallelFor
-        {
-            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray;
-        
-            [ReadOnly] public int ResolutionX;
-            [ReadOnly] public int ResolutionY;
-            
-            [ReadOnly] public float3 LightDir;
-
-            public NativeArray<float> CurChangeHeightArray;
-
-            // Each Execute call processes only an individual index.
-            public void Execute(int index) {
-                var xIndex = index % ResolutionX;
-                var yIndex = index / ResolutionX;
-
-                var height = CurHeightArray[index].Height;
-                
-                var newIndex =  + (-xIndex / height)
-
-                CurChangeHeightArray[newIndex] = 0;
             }
         }
 
