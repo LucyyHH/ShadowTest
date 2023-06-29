@@ -113,8 +113,8 @@
 				v.vertex.xyz += d * t;
 				
 				float2 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0).rg;
-				v.vertex.xyz += d * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) / 2);
-				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset + 0.5) * view;
+				v.vertex.xyz += d * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) /*/ 2*/);
+				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * view;
 
 				/*float2 height2 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0).rg;
 				v.vertex.y = height2.r * _HeightTexHigh + _HeightTexBottom + _LandHeightOffset;	// 这句加了有地方会有问题

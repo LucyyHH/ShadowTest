@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:IntegerField value="100" name="txtGenerate" label="未生成" style="width: 100px; flex-direction: column; align-items: stretch; align-self: auto; justify-content: center; color: rgb(0, 0, 0); -unity-text-outline-color: rgba(156, 255, 0, 0.55); -unity-text-outline-width: 0.5px; font-size: 15px;" />
+    <ui:Button text="Custom" enable-rich-text="false" name="btnCustom" style="width: 100px;" />
+    <ui:Button text="ShadowMap" enable-rich-text="false" name="btnShadowMap" style="width: 100px;" />
+</ui:UXML>

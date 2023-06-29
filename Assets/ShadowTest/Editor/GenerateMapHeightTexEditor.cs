@@ -36,8 +36,6 @@ namespace ShadowTest.Editor {
         private float _heightOffsetSinMin = 0.1f;
         private float _heightOffsetSinMax = 0.5f;
         private int _checkLength = 5;
-        
-        private float3 _lightDir = float3.zero;
 
         private static readonly int HeightTex = Shader.PropertyToID("_HeightTex");
         private static readonly int HeightTexLeft = Shader.PropertyToID("_HeightTexLeft");
@@ -180,8 +178,6 @@ namespace ShadowTest.Editor {
                     _checkLength = EditorGUILayout.IntField ("高度偏移检查的距离", _checkLength);
                     EditorGUILayout.Space ();
                 }
-
-                _lightDir = EditorGUILayout.Vector3Field("灯光方向", _lightDir);
 
                 _mapMaterial = (Material) EditorGUILayout.ObjectField ("Material:", _mapMaterial, typeof (Material), true);
                 EditorGUILayout.Space ();
