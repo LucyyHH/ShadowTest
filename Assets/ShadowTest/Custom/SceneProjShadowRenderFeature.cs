@@ -27,7 +27,7 @@ namespace HLLR {
             }
         }
 
-        public class ShadowRenderPass : ScriptableRenderPass {
+        private class ShadowRenderPass : ScriptableRenderPass {
             private readonly List<ShaderTagId> _mShaderTagIdList = new List<ShaderTagId>()
             {
                 //new ShaderTagId("ShadowCaster"),
@@ -59,30 +59,6 @@ namespace HLLR {
                     //这里不需要所以没有直接写CommandBuffer，在下面Feature的AddRenderPasses加入了渲染队列，底层还是CB
                     context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref _mFilteringSettings);
                 }
-                
-                
-                /*var mgr = SceneProjectionShadowMgr.Get();
-                if (mgr != null) {
-                    if (SceneNode.Get()) {
-                        var groundRD = SceneNode.Get().groundMeshRenderer;
-                        if (groundRD) {
-                            
-                        }
-                        var cmd = CommandBufferPool.Get();
-
-                        //cmd.DrawRenderer(groundRD, groundRD.material);
-
-                        foreach (var model in mgr.modelList) {
-                            var mtrl = model.projShadowMaterial;
-                            foreach (var render in model.GetRendererList()) {
-                                cmd.DrawRenderer(render, mtrl);
-                            }
-                        }
-
-                        context.ExecuteCommandBuffer(cmd);
-                        CommandBufferPool.Release(cmd);
-                    }
-                }*/
             }
         }
     }

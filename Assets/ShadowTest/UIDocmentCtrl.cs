@@ -15,6 +15,7 @@ namespace ShadowTest {
         private IntegerField _txtGenerate;
         private Button _btnShadowMap;
         private Button _btnCustom;
+        private Button _btnRandomLightDir;
 
         private readonly List<GameObject> _gameObjects = new List<GameObject>();
 
@@ -27,11 +28,13 @@ namespace ShadowTest {
             _txtGenerate = _rootElement.Q<IntegerField>("txtGenerate");
             _btnShadowMap = _rootElement.Q<Button>("btnShadowMap");
             _btnCustom = _rootElement.Q<Button>("btnCustom");
+            _btnRandomLightDir = _rootElement.Q<Button>("btnRandomLightDir");
 
             //为按钮绑定事件
             //使用普通方法绑定按钮事件
             _btnShadowMap.RegisterCallback<ClickEvent>(OnBtnShadowMapClick);
             _btnCustom.RegisterCallback<ClickEvent>(OnBtnCustomClick);
+            _btnRandomLightDir.RegisterCallback<ClickEvent>(OnBtnRandomLightDir);
  
             //初始化内容显示
             UpdateLabelText();
@@ -73,7 +76,11 @@ namespace ShadowTest {
                 _txtGenerate.label = "Custom";
             }
         }
- 
+
+        private void OnBtnRandomLightDir(ClickEvent evt) {
+            
+        }
+
         private void UpdateLabelText() {
             _txtGenerate.value = 150;
             _txtGenerate.label = "未生成";
