@@ -42,7 +42,7 @@ Material:
     - _HeightTexWidth: 32
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.02
-    - _MaxOffset: 0.89
+    - _MaxOffset: 0.47
     m_Colors:
-    - _MainLightDir: {r: 0.15, g: 0.15, b: 0.15, a: 0}
+    - _MainLightDir: {r: 0, g: -1, b: 0, a: 0}
   m_BuildTextureStacks: []

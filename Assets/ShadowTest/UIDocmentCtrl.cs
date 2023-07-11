@@ -78,7 +78,7 @@ namespace ShadowTest {
         }
 
         private void OnBtnRandomLightDir(ClickEvent evt) {
-            
+            GlobalData.GetInstance().lightDir = new Vector4(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f));
         }
 
         private void UpdateLabelText() {
