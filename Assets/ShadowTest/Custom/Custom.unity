@@ -1076,10 +1076,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ade22cc983705841a94d392f010f2a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curLight: {fileID: 2114283754330233425}
-  goGenerateShadowMap: {fileID: 4416926081852918481, guid: 02af492f531b90d4a919220c9f3faa7e,
-    type: 3}
-  goGenerateCustomShadow: {fileID: 4416926081852918481, guid: 168fa0bff6e35ea40aed10fb2e36e540,
+  sceneType: 1
+  goGenerate: {fileID: 4416926081852918481, guid: 168fa0bff6e35ea40aed10fb2e36e540,
     type: 3}
 --- !u!1001 &1979352518
 PrefabInstance:

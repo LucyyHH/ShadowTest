@@ -667,6 +667,79 @@ Transform:
   m_Father: {fileID: 2114283753834967213}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1029862677
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3893294197879345259, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416926081852918481, guid: 02af492f531b90d4a919220c9f3faa7e,
+        type: 3}
+      propertyPath: m_Name
+      value: PlayerArmatureIdleShadowMap
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 02af492f531b90d4a919220c9f3faa7e, type: 3}
 --- !u!1001 &1221041499
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1076,10 +1149,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ade22cc983705841a94d392f010f2a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curLight: {fileID: 2114283754330233425}
-  goGenerateShadowMap: {fileID: 4416926081852918481, guid: 02af492f531b90d4a919220c9f3faa7e,
-    type: 3}
-  goGenerateCustomShadow: {fileID: 4416926081852918481, guid: 168fa0bff6e35ea40aed10fb2e36e540,
+  sceneType: 3
+  goGenerate: {fileID: 4416926081852918481, guid: 02af492f531b90d4a919220c9f3faa7e,
     type: 3}
 --- !u!1001 &1979352518
 PrefabInstance:

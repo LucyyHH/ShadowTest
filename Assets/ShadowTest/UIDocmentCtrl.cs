@@ -1,23 +1,38 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 namespace ShadowTest {
     public class UIDocumentCtrl : MonoBehaviour {
-        public Light curLight;
+        public SceneType sceneType;
         
-        public GameObject goGenerateShadowMap;
-        public GameObject goGenerateCustomShadow;
+        public GameObject goGenerate;
         
         private UIDocument _document;
  
         private VisualElement _rootElement;
         private IntegerField _txtGenerate;
-        private Button _btnShadowMap;
-        private Button _btnCustom;
+        private Button _btnGenerate;
         private Button _btnRandomLightDir;
 
         private readonly List<GameObject> _gameObjects = new List<GameObject>();
+
+        /// <summary>
+        /// 场景类型
+        /// </summary>
+        public enum SceneType {
+            Default,
+            Custom,
+            ProjectorShadow,
+            ShadowMap
+        }
+        
+        private void Awake() {
+            QualitySettings.SetQualityLevel((int)sceneType, true);
+        }
 
         private void Start() {
             _document = GetComponent<UIDocument>();
@@ -26,22 +41,20 @@ namespace ShadowTest {
  
             //在根下，通过JQuery和名字获取控件
             _txtGenerate = _rootElement.Q<IntegerField>("txtGenerate");
-            _btnShadowMap = _rootElement.Q<Button>("btnShadowMap");
-            _btnCustom = _rootElement.Q<Button>("btnCustom");
+            _btnGenerate = _rootElement.Q<Button>("btnGenerate");
             _btnRandomLightDir = _rootElement.Q<Button>("btnRandomLightDir");
 
             //为按钮绑定事件
             //使用普通方法绑定按钮事件
-            _btnShadowMap.RegisterCallback<ClickEvent>(OnBtnShadowMapClick);
-            _btnCustom.RegisterCallback<ClickEvent>(OnBtnCustomClick);
+            _btnGenerate.RegisterCallback<ClickEvent>(OnBtnGenerateClick);
             _btnRandomLightDir.RegisterCallback<ClickEvent>(OnBtnRandomLightDir);
  
             //初始化内容显示
             UpdateLabelText();
         }
  
-        private void OnBtnShadowMapClick(ClickEvent evt) {
-            if(goGenerateShadowMap && _txtGenerate.value > 0) {
+        private void OnBtnGenerateClick(ClickEvent evt) {
+            if(goGenerate && _txtGenerate.value > 0) {
                 foreach(var go in _gameObjects) {
                     if(go) {
                         Destroy(go);
@@ -49,31 +62,8 @@ namespace ShadowTest {
                 }
                 _gameObjects.Clear();
                 for(var i = 0; i < _txtGenerate.value; i++) {
-                    _gameObjects.Add(Instantiate(goGenerateShadowMap));
+                    _gameObjects.Add(Instantiate(goGenerate));
                 }
-
-                if(curLight) {
-                    curLight.shadows = LightShadows.Hard;
-                }
-                
-                _txtGenerate.label = "ShadowMap";
-            }
-        }
-        private void OnBtnCustomClick(ClickEvent evt) {
-            if(goGenerateCustomShadow && _txtGenerate.value > 0) {
-                foreach(var go in _gameObjects) {
-                    if(go) {
-                        Destroy(go);
-                    }
-                }
-                _gameObjects.Clear();
-                for(var i = 0; i < _txtGenerate.value; i++) {
-                    _gameObjects.Add(Instantiate(goGenerateCustomShadow));
-                }
-                
-                curLight.shadows = LightShadows.None;
- 
-                _txtGenerate.label = "Custom";
             }
         }
 
@@ -83,8 +73,7 @@ namespace ShadowTest {
 
         private void UpdateLabelText() {
             _txtGenerate.value = 150;
-            _txtGenerate.label = "未生成";
+            _txtGenerate.label = SceneManager.GetActiveScene().name;
         }
- 
     }
 }
