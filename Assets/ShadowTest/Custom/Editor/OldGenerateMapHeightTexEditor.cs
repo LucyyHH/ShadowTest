@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace ShadowTest.Editor {
-    public class GenerateMapHeightTexEditor : EditorWindow {
+    public class OldGenerateMapHeightTexEditor : EditorWindow {
         private GameObject _mapGo;
         private Material _mapMaterial;
         private int _normalHeightLayer;
@@ -98,7 +98,7 @@ namespace ShadowTest.Editor {
 
         [MenuItem ("Tools/GenerateMapHeightTex")]
         private static void ShowGenerateMapHeightTexWindow () {
-            GetWindow (typeof (GenerateMapHeightTexEditor));
+            GetWindow (typeof (OldGenerateMapHeightTexEditor));
         }
 
         private void OnGUI () {
