@@ -20,29 +20,7 @@ namespace ShadowTest.Custom.Editor {
             EditorGUILayout.Space();
             _generateMapHeightTex.mapGo = (GameObject) EditorGUILayout.ObjectField("GameObject:", _generateMapHeightTex.mapGo, typeof(GameObject), true);
             if(!ReferenceEquals(_generateMapHeightTex.mapGo, null)) {
-                /*string[] layerNameArray = new string[32];
-                for (int i = 0; i < 32; i++) {
-                    layerNameArray[i] = LayerMask.LayerToName (i);
-                }
-                List<string> layerNameList = new List<string> ();
-                bool checkFirst = true;
-                for (int i = 0; i < layerNameArray.Length; i++) {
-                    bool curIsNullOrEmpty = string.IsNullOrEmpty (layerNameArray[i]);
-                    if (checkFirst) {
-                        if (curIsNullOrEmpty) {
-                            continue;
-                        }
-                        layerNameList.Add (layerNameArray[i]);
-                        checkFirst = false;
-                    } else {
-                        if(!curIsNullOrEmpty || (i + 1 < layerNameArray.Length && !string.IsNullOrEmpty (layerNameArray[i + 1]))) {
-                            layerNameList.Add (layerNameArray[i]);
-                        }
-                    }
-                }*/
-
                 _generateMapHeightTex.normalHeightLayer = EditorGUILayout.LayerField("需要生成高度的普通层:", _generateMapHeightTex.normalHeightLayer);
-                //selectLayer = EditorGUILayout.MaskField ("LayerMask:", selectLayer, layerNameList.ToArray ());
                 EditorGUILayout.Space();
 
                 _generateMapHeightTex.resolutionX = EditorGUILayout.IntField("分辨率X:", _generateMapHeightTex.resolutionX);
