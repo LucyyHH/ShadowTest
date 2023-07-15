@@ -208,8 +208,8 @@ namespace ShadowTest.Custom {
             var meshInfoVoList = new NativeList<MeshInfoVo>(Allocator);
             foreach(var meshFilter in meshFilters) {
                 var gameObject = meshFilter.gameObject;
-                var normalLayer = gameObject.layer == normalHeightLayer;
-                var offsetLayer = checkHeightOffsetLayer && gameObject.layer == heightOffsetLayer;
+                var normalLayer = (normalHeightLayer.value >> gameObject.layer & 1) == 1;
+                var offsetLayer = checkHeightOffsetLayer && (heightOffsetLayer.value >> gameObject.layer & 1) == 1;
                 if(normalLayer || offsetLayer) {
                     var sharedMesh = meshFilter.sharedMesh;
 
@@ -371,12 +371,14 @@ namespace ShadowTest.Custom {
             fileStream.Write(dataBytes, 0, dataBytes.Length);
             fileStream.Close();
 
-            AssetDatabase.CreateFolder($"{Application.dataPath}/{path}", mapGo.name);
-
             //是否有材质球，没有则创建并保存
             if(mapMaterial == null) {
-                mapMaterial = new Material(Shader.Find("Custom/LC/Shadow/ProjShadowURP"));
-                AssetDatabase.CreateAsset(mapMaterial, $"{Application.dataPath}/{path}/{mapGo.name}.mat");
+                var matPath = $"Assets/{path}/{mapGo.name}.mat";
+                mapMaterial = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                if(mapMaterial == null) {
+                    mapMaterial = new Material(Shader.Find("Custom/LC/Shadow/ProjShadowURP"));
+                    AssetDatabase.CreateAsset(mapMaterial, $"Assets/{path}/{mapGo.name}.mat");
+                }
             }
             
             mapMaterial.SetTexture(HeightTex, AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets{texturePath}"));

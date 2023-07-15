@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: GenerateMapHeightTex_Environment
   m_EditorClassIdentifier: 
   mapGo: {fileID: 8345070699079395523, guid: 09aade0ecefd01e4b8f7661acf64f5c2, type: 3}
-  mapMaterial: {fileID: 0}
+  mapMaterial: {fileID: 2100000, guid: 136ea7830fd474d4397aada4d655a988, type: 2}
   normalHeightLayer:
     serializedVersion: 2
     m_Bits: 8
   resolutionX: 256
   resolutionY: 256
-  path: ShadowTest/Custom
+  path: ShadowTest/Custom/Environment
   needLimitLeft: 1
   leftLimit: -13
   needLimitRight: 1

@@ -7,11 +7,8 @@ using UnityEngine;
 [CustomEditor(typeof(GenerateMapHeightTex))]
 public class GenerateMapHeightTexInspector : Editor
 {
-    private GenerateMapHeightTex generateMapHeightTex;
- 
     void OnEnable()
     {
-        generateMapHeightTex = target as GenerateMapHeightTex;
     }
  
     public override void OnInspectorGUI()
@@ -110,7 +107,7 @@ public class GenerateMapHeightTexInspector : Editor
         }*/
         
         if(GUILayout.Button("生成")) {
-            generateMapHeightTex.GenerateMapHeightTexture();
+            (target as GenerateMapHeightTex)?.GenerateMapHeightTexture();
         }
 
         // Apply changes to the serializedProperty - always do this in the end of OnInspectorGUI.

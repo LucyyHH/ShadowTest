@@ -42,12 +42,10 @@ namespace ShadowTest {
             //在根下，通过JQuery和名字获取控件
             _txtGenerate = _rootElement.Q<IntegerField>("txtGenerate");
             _btnGenerate = _rootElement.Q<Button>("btnGenerate");
-            _btnRandomLightDir = _rootElement.Q<Button>("btnRandomLightDir");
 
             //为按钮绑定事件
             //使用普通方法绑定按钮事件
             _btnGenerate.RegisterCallback<ClickEvent>(OnBtnGenerateClick);
-            _btnRandomLightDir.RegisterCallback<ClickEvent>(OnBtnRandomLightDir);
  
             //初始化内容显示
             UpdateLabelText();
@@ -65,10 +63,6 @@ namespace ShadowTest {
                     _gameObjects.Add(Instantiate(goGenerate));
                 }
             }
-        }
-
-        private void OnBtnRandomLightDir(ClickEvent evt) {
-            GlobalData.GetInstance().lightDir = new Vector4(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f));
         }
 
         private void UpdateLabelText() {
