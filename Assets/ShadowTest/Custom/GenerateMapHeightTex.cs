@@ -10,59 +10,59 @@ using UnityEngine;
 namespace ShadowTest.Custom {
     [CreateAssetMenu(fileName = "GenerateMapHeightTex", menuName = "ScriptableObject/GenerateMapHeightTex", order = 0)]
     public class GenerateMapHeightTex : ScriptableObject {
-        //[NonSerialized]
+        [HideInInspector]
         public GameObject mapGo;
 
-        //[NonSerialized]
+        [HideInInspector]
         public Material mapMaterial;
 
-        //[NonSerialized]
-        public LayerMask normalHeightLayer;
-        //[NonSerialized]
+        [HideInInspector]
+        public int normalHeightLayer;
+        [HideInInspector]
         public int resolutionX;
-        //[NonSerialized]
+        [HideInInspector]
         public int resolutionY;
-        //[NonSerialized]
+        [HideInInspector]
         public string path;
 
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitLeft;
-        //[NonSerialized]
+        [HideInInspector]
         public float leftLimit = float.MinValue;
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitRight;
-        //[NonSerialized]
+        [HideInInspector]
         public float rightLimit = float.MaxValue;
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitBottom;
-        //[NonSerialized]
+        [HideInInspector]
         public float bottomLimit = float.MinValue;
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitTop;
-        //[NonSerialized]
+        [HideInInspector]
         public float topLimit = float.MaxValue;
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitBack;
-        //[NonSerialized]
+        [HideInInspector]
         public float backLimit = float.MinValue;
-        //[NonSerialized]
+        [HideInInspector]
         public bool needLimitFront;
-        //[NonSerialized]
+        [HideInInspector]
         public float frontLimit = float.MaxValue;
 
-        //[NonSerialized]
+        [HideInInspector]
         public bool needHeightOffset;
-        //[NonSerialized]
+        [HideInInspector]
         public bool checkHeightOffsetLayer;
-        //[NonSerialized]
-        public LayerMask heightOffsetLayer;
-        //[NonSerialized]
+        [HideInInspector]
+        public int heightOffsetLayer;
+        [HideInInspector]
         public float heightOffset = 5f;
-        //[NonSerialized]
+        [HideInInspector]
         public float heightOffsetSinMin = 0.1f;
-        //[NonSerialized]
+        [HideInInspector]
         public float heightOffsetSinMax = 0.5f;
-        //[NonSerialized]
+        [HideInInspector]
         public int checkLength = 5;
 
         private static readonly int HeightTex = Shader.PropertyToID("_HeightTex");
@@ -134,22 +134,6 @@ namespace ShadowTest.Custom {
                 return;
             }
 
-            if(ReferenceEquals(mapMaterial, null)) {
-                /*_mapMaterial = new Material (Shader.Find ("Custom/LC/ProjShadowURP"));
-        string path = Application.dataPath + $"/{_path}/{_mapGo.name}.mat";
-        // 为资源创建一个新的唯一路径。
-        path = AssetDatabase.GenerateUniqueAssetPath(path);
-        // 通过在导入资源（例如，FBX 文件）中提取外部资源，在对象（例如，材质）中创建此资源。
-        string value = AssetDatabase.ExtractAsset(item, path);
-        // 成功提取( 如果 Unity 已成功提取资源，则返回一个空字符串)
-        if (string.IsNullOrEmpty(value))
-        {
-            AssetDatabase.WriteImportSettingsIfDirty(assetPath);
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-            isCreate = true;
-        }*/
-            }
-
             CalculateWithJobSystem();
         }
 
@@ -208,8 +192,8 @@ namespace ShadowTest.Custom {
             var meshInfoVoList = new NativeList<MeshInfoVo>(Allocator);
             foreach(var meshFilter in meshFilters) {
                 var gameObject = meshFilter.gameObject;
-                var normalLayer = (normalHeightLayer.value >> gameObject.layer & 1) == 1;
-                var offsetLayer = checkHeightOffsetLayer && (heightOffsetLayer.value >> gameObject.layer & 1) == 1;
+                var normalLayer = normalHeightLayer == gameObject.layer;
+                var offsetLayer = checkHeightOffsetLayer && heightOffsetLayer == gameObject.layer;
                 if(normalLayer || offsetLayer) {
                     var sharedMesh = meshFilter.sharedMesh;
 
@@ -380,6 +364,13 @@ namespace ShadowTest.Custom {
                     AssetDatabase.CreateAsset(mapMaterial, $"Assets/{path}/{mapGo.name}.mat");
                 }
             }
+
+            var heightTextureImporter = AssetImporter.GetAtPath($"Assets{texturePath}") as TextureImporter;
+            heightTextureImporter.textureType = TextureImporterType.Default;
+            heightTextureImporter.sRGBTexture = false;
+            heightTextureImporter.mipmapEnabled = false;
+            heightTextureImporter.isReadable = false;
+            heightTextureImporter.textureCompression = TextureImporterCompression.Compressed;
             
             mapMaterial.SetTexture(HeightTex, AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets{texturePath}"));
             mapMaterial.SetFloat(HeightTexLeft, mapBoundary.Left);

@@ -96,7 +96,7 @@ namespace ShadowTest.Editor {
             public bool Offset;
         }
 
-        [MenuItem ("Tools/GenerateMapHeightTex")]
+        //[MenuItem ("Tools/GenerateMapHeightTex")]
         private static void ShowGenerateMapHeightTexWindow () {
             GetWindow (typeof (OldGenerateMapHeightTexEditor));
         }
