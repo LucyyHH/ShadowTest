@@ -34,6 +34,12 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha: 0.3
+    - _BaseHeight1: 2.11
+    - _BaseHeight2: 2.11
+    - _BaseHeight3: 27.78
+    - _FinalHeight1: 2.12
+    - _FinalHeight2: 2.12
+    - _FinalHeight3: 27.79
     - _HeightTexBack: -2
     - _HeightTexBottom: -0.01
     - _HeightTexHigh: 7.01
@@ -42,7 +48,9 @@ Material:
     - _HeightTexWidth: 32
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.02
-    - _MaxOffset: 0.47
+    - _MaxHeight1: 2.81
+    - _MaxHeight2: 4.2000003
+    - _MaxOffset: 0.44
     m_Colors:
-    - _MainLightDir: {r: 0, g: 0.15, b: 0, a: 0}
+    - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
   m_BuildTextureStacks: []

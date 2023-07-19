@@ -13,6 +13,8 @@
 		_HeightTexWidth("Height Tex Width", float) = 0
 		_HeightTexBottom("Height Tex Bottom", float) = 0
 		_HeightTexHigh("Height Tex High", float) = 0
+		_MaxHeight1("Max Height 1", float) = 0
+		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
 		_MainLightDir("Main Light Dir", Vector) = (1, 1, 1, 1)
 	}
@@ -64,6 +66,8 @@
 			float _HeightTexWidth;
 			float _HeightTexBottom;
 			float _HeightTexHigh;
+			float _MaxHeight1;
+			float _MaxHeight2;
 			float _MaxOffset;
 			float4 _MainLightDir;
 			CBUFFER_END
@@ -88,10 +92,18 @@
 				float2 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
+
+			float get_height(half3 height, const float original_y)
+			{
+				const float height1 = height.r * _MaxHeight1;
+				const float height2 = height.g * _MaxHeight2 + _MaxHeight1;
+				
+				return height.g > 0 && height2 < original_y ? height2 : height1;
+			}
  
 			v2f vert(appdata v)
 			{
-				float3 _LightDir = normalize(_MainLightDir.xyz);
+				const float3 light_dir = normalize(_MainLightDir.xyz);
 
 				v2f o;
 				UNITY_SETUP_INSTANCE_ID(v);
@@ -99,25 +111,26 @@
 
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
 				half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
-				//计算投影光照
-				float LandHeight = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0).r * _HeightTexHigh + _HeightTexBottom;
+				//计算高度
+				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
+				float land_height = get_height(height, v.vertex.y) + _HeightTexBottom;
+
 				//面上的点
-				float3 p = float3(v.vertex.x, LandHeight, v.vertex.z);
+				const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
 				//源点
-				float3 orig = v.vertex;
+				const float3 orig = v.vertex;
 				//面的法线
-				float3 n = float3(0, -1, 0);
+				const float3 n = float3(0, -1, 0);
 				//光的方向
-				float3 d = _LightDir;
-				float t = dot((p - orig), n)/dot(d, n);
+				const float3 d = light_dir;
+				const float t = dot(p - orig, n)/dot(d, n);
 				v.vertex.xyz += d * t;
 
+				/*const half3 height1 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
 				
-				float2 height2 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0).rg;
-				v.vertex.xyz += d * (v.vertex.y - (height2.r * _HeightTexHigh + _HeightTexBottom));
-				v.vertex.xyz += (height2.g * _MaxOffset + _LandHeightOffset) * view;
-				//v.vertex.xyz += (height2.g * _MaxOffset + _LandHeightOffset) * normalize(mul(unity_WorldToCamera, view));		//不知道为啥，楼梯算偏移的时候巨斜
-				//v.vertex.y += height2.g * _MaxOffset + _LandHeightOffset;
+				v.vertex.xyz += d * (v.vertex.y - (get_height(height1) + _HeightTexBottom));*/
+				v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
+				
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);

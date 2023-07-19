@@ -33,11 +33,11 @@ MonoBehaviour:
   needLimitFront: 1
   frontLimit: 30
   needHeightOffset: 1
+  heightOffset: 0.5
+  heightOffsetSinMin: 0.01
+  heightOffsetSinMax: 0.9
+  checkLength: 2
   checkHeightOffsetLayer: 0
   heightOffsetLayer:
     serializedVersion: 2
     m_Bits: 0
-  heightOffset: 0.5
-  heightOffsetSinMin: 0.05
-  heightOffsetSinMax: 0.95
-  checkLength: 2

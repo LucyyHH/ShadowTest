@@ -10,60 +10,57 @@ using UnityEngine;
 namespace ShadowTest.Custom {
     [CreateAssetMenu(fileName = "GenerateMapHeightTex", menuName = "ScriptableObject/GenerateMapHeightTex", order = 0)]
     public class GenerateMapHeightTex : ScriptableObject {
-        [HideInInspector]
+        [Header("GameObject")]
         public GameObject mapGo;
 
-        [HideInInspector]
+        [Header("Material")]
         public Material mapMaterial;
 
-        [HideInInspector]
-        public int normalHeightLayer;
-        [HideInInspector]
+        [Header("需要生成高度的普通层")]
+        public LayerMask normalHeightLayer;
+        [Header("分辨率X")]
         public int resolutionX;
-        [HideInInspector]
+        [Header("分辨率Y")]
         public int resolutionY;
-        [HideInInspector]
+        [Header("保存路径(从'Assets/'开始)")]
         public string path;
 
-        [HideInInspector]
+        [Header("高度的分割线(百分比),高度以下存到r通道，以上存到g通道"), Range(0, 100)]
+        public float highCuttingLine;
+
+        [Header("边界(-x)限制")]
         public bool needLimitLeft;
-        [HideInInspector]
         public float leftLimit = float.MinValue;
-        [HideInInspector]
+        [Header("边界(+x)限制")]
         public bool needLimitRight;
-        [HideInInspector]
         public float rightLimit = float.MaxValue;
-        [HideInInspector]
+        [Header("边界(-y)限制")]
         public bool needLimitBottom;
-        [HideInInspector]
         public float bottomLimit = float.MinValue;
-        [HideInInspector]
+        [Header("边界(+y)限制")]
         public bool needLimitTop;
-        [HideInInspector]
         public float topLimit = float.MaxValue;
-        [HideInInspector]
+        [Header("边界(-z)限制")]
         public bool needLimitBack;
-        [HideInInspector]
         public float backLimit = float.MinValue;
-        [HideInInspector]
+        [Header("边界(+z)限制")]
         public bool needLimitFront;
-        [HideInInspector]
         public float frontLimit = float.MaxValue;
 
-        [HideInInspector]
+        [Header("是否需要高度偏移")]
         public bool needHeightOffset;
-        [HideInInspector]
+        [Header("高度偏移")]
+        public float heightOffset = 0.1f;
+        [Header("高度偏移最小角度值(sin)")]
+        public float heightOffsetSinMin = 0.05f;
+        [Header("高度偏移最大角度值(sin)")]
+        public float heightOffsetSinMax = 0.6f;
+        [Header("高度偏移检查的距离")]
+        public int checkLength = 2;
+        [Header("是否检查高度偏移层级")]
         public bool checkHeightOffsetLayer;
-        [HideInInspector]
-        public int heightOffsetLayer;
-        [HideInInspector]
-        public float heightOffset = 5f;
-        [HideInInspector]
-        public float heightOffsetSinMin = 0.1f;
-        [HideInInspector]
-        public float heightOffsetSinMax = 0.5f;
-        [HideInInspector]
-        public int checkLength = 5;
+        [Header("需要生成高度的特殊层(楼梯等有问题的)")]
+        public LayerMask heightOffsetLayer;
 
         private static readonly int HeightTex = Shader.PropertyToID("_HeightTex");
         private static readonly int HeightTexLeft = Shader.PropertyToID("_HeightTexLeft");
@@ -72,6 +69,8 @@ namespace ShadowTest.Custom {
         private static readonly int HeightTexWidth = Shader.PropertyToID("_HeightTexWidth");
         private static readonly int HeightTexBottom = Shader.PropertyToID("_HeightTexBottom");
         private static readonly int HeightTexHigh = Shader.PropertyToID("_HeightTexHigh");
+        private static readonly int MaxHeight1 = Shader.PropertyToID("_MaxHeight1");
+        private static readonly int MaxHeight2 = Shader.PropertyToID("_MaxHeight2");
         private static readonly int MaxOffset = Shader.PropertyToID("_MaxOffset");
 
         private const Allocator Allocator = Unity.Collections.Allocator.TempJob;
@@ -192,8 +191,8 @@ namespace ShadowTest.Custom {
             var meshInfoVoList = new NativeList<MeshInfoVo>(Allocator);
             foreach(var meshFilter in meshFilters) {
                 var gameObject = meshFilter.gameObject;
-                var normalLayer = normalHeightLayer == gameObject.layer;
-                var offsetLayer = checkHeightOffsetLayer && heightOffsetLayer == gameObject.layer;
+                var normalLayer = ((1 << gameObject.layer) & normalHeightLayer.value) != 0;
+                var offsetLayer = checkHeightOffsetLayer && ((1 << gameObject.layer) & heightOffsetLayer.value) != 0;
                 if(normalLayer || offsetLayer) {
                     var sharedMesh = meshFilter.sharedMesh;
 
@@ -203,15 +202,9 @@ namespace ShadowTest.Custom {
                         meshInfoVoList.Add(new MeshInfoVo
                         {
                             Type = curType,
-                            MeshWordPos1 =
-                                LeftTwoDecimal(
-                                    meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]])),
-                            MeshWordPos2 =
-                                LeftTwoDecimal(
-                                    meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]])),
-                            MeshWordPos3 =
-                                LeftTwoDecimal(
-                                    meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]])),
+                            MeshWordPos1 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]])),
+                            MeshWordPos2 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]])),
+                            MeshWordPos3 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]])),
                         });
                     }
                 }
@@ -286,13 +279,12 @@ namespace ShadowTest.Custom {
             var stepY = 1.0f / resolutionY * width;
             var texture2D = new Texture2D(resolutionX, resolutionY);
 
-            var maxHeight1 = high * 0.3f;
-            var maxHeight2 = high * 0.6f;
+            var maxHeight1 = LeftTwoDecimal(high * (highCuttingLine / 100f));
+            var maxHeight2 = high - maxHeight1;
 
             var pixelCount = resolutionX * resolutionY;
             var curHeightArray1 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
             var curHeightArray2 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
-            var curHeightArray3 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
             var calculateHeightJob = new CalculateHeightJob
             {
                 TriangleInfoArray = usedTriangleInfoList.AsArray(),
@@ -302,24 +294,22 @@ namespace ShadowTest.Custom {
                 Left = mapBoundary.Left,
                 Bottom = mapBoundary.Bottom,
                 Back = mapBoundary.Back,
-                MaxHeight1 = maxHeight1,
-                MaxHeight2 = maxHeight2,
+                maxHeight1 = maxHeight1,
                 CurHeightArray1 = curHeightArray1,
-                CurHeightArray2 = curHeightArray2,
-                CurHeightArray3 = curHeightArray3,
+                CurHeightArray2 = curHeightArray2
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
             calculateHeightHandle.Complete();
             usedTriangleInfoList.Dispose();
 
-            var curOffsetHeightArray = new NativeArray<float>(pixelCount, Allocator);
+            var curOffsetHeightArray1 = new NativeArray<float>(pixelCount, Allocator);
+            var curOffsetHeightArray2 = new NativeArray<float>(pixelCount, Allocator);
             var maxOffset = 0f;
             if(needHeightOffset) {
                 var calculateOffsetHeightJob = new CalculateOffsetHeightJob
                 {
                     CurHeightArray1 = curHeightArray1,
                     CurHeightArray2 = curHeightArray2,
-                    CurHeightArray3 = curHeightArray3,
                     ResolutionX = resolutionX,
                     ResolutionY = resolutionY,
                     CheckHeightOffsetLayer = checkHeightOffsetLayer,
@@ -330,12 +320,18 @@ namespace ShadowTest.Custom {
                     StepX = stepX,
                     StepY = stepY,
                     Bottom = mapBoundary.Bottom,
-                    CurOffsetHeightArray = curOffsetHeightArray,
+                    CurOffsetHeightArray1 = curOffsetHeightArray1,
+                    CurOffsetHeightArray2 = curOffsetHeightArray2,
                 };
                 var calculateOffsetHeightHandle = calculateOffsetHeightJob.Schedule(pixelCount, 64);
                 calculateOffsetHeightHandle.Complete();
 
-                foreach(var offset in curOffsetHeightArray) {
+                foreach(var offset in curOffsetHeightArray1) {
+                    if(maxOffset < offset) {
+                        maxOffset = offset;
+                    }
+                }
+                foreach(var offset in curOffsetHeightArray2) {
                     if(maxOffset < offset) {
                         maxOffset = offset;
                     }
@@ -346,18 +342,16 @@ namespace ShadowTest.Custom {
             for(var y = 0; y < resolutionY; y++) {
                 for(var x = 0; x < resolutionX; x++) {
                     texture2D.SetPixel(x, y,
-                        new Color(curHeightArray1[pixelIndex].Height / high, 
-                            curHeightArray2[pixelIndex].Height / high, 
-                            curHeightArray3[pixelIndex].Height / high, 
-                            curOffsetHeightArray[pixelIndex] / maxOffset));
+                        new Color(curHeightArray1[pixelIndex].Height / maxHeight1, curHeightArray2[pixelIndex].Height / maxHeight2, 
+                            (curOffsetHeightArray2[pixelIndex] > curOffsetHeightArray1[pixelIndex] ? curOffsetHeightArray2[pixelIndex] : curOffsetHeightArray1[pixelIndex]) / maxOffset));
                     pixelIndex++;
                 }
             }
 
             curHeightArray1.Dispose();
             curHeightArray2.Dispose();
-            curHeightArray3.Dispose();
-            curOffsetHeightArray.Dispose();
+            curOffsetHeightArray1.Dispose();
+            curOffsetHeightArray2.Dispose();
 
             var costTime = DateTime.Now.Subtract(curTime).TotalMilliseconds / 1000d;
 
@@ -394,13 +388,14 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(HeightTexWidth, width);
             mapMaterial.SetFloat(HeightTexBottom, mapBoundary.Bottom);
             mapMaterial.SetFloat(HeightTexHigh, high);
+            mapMaterial.SetFloat(MaxHeight1, maxHeight1);
+            mapMaterial.SetFloat(MaxHeight2, maxHeight2);
             mapMaterial.SetFloat(MaxOffset, maxOffset);
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log(
-                $"left:{mapBoundary.Left}_length:{length}_back:{mapBoundary.Back}_width:{width}_bottom:{mapBoundary.Bottom}_high:{high}_maxOffset:{maxOffset}_costTime:{costTime}");
+            Debug.Log($"left:{mapBoundary.Left}_length:{length}_back:{mapBoundary.Back}_width:{width}_bottom:{mapBoundary.Bottom}_high:{high}_baseHeight1:{maxHeight1}_baseHeight2:{maxHeight2}_maxOffset:{maxOffset}_costTime:{costTime}");
         }
 
         /// <summary>
@@ -480,12 +475,10 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float Back;
             [ReadOnly] public float Bottom;
             
-            [ReadOnly] public float MaxHeight1;
-            [ReadOnly] public float MaxHeight2;
+            [ReadOnly] public float maxHeight1;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray1;
             public NativeArray<TriangleHeightInfo> CurHeightArray2;
-            public NativeArray<TriangleHeightInfo> CurHeightArray3;
 
             // Each Execute call processes only an individual index.
             public void Execute(int index) {
@@ -500,11 +493,6 @@ namespace ShadowTest.Custom {
                     Offset = false
                 };
                 var curHeightArray2 = new TriangleHeightInfo
-                {
-                    Height = 0f,
-                    Offset = false
-                };
-                var curHeightArray3 = new TriangleHeightInfo
                 {
                     Height = 0f,
                     Offset = false
@@ -549,36 +537,26 @@ namespace ShadowTest.Custom {
                         -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
-                    if(tempH < MaxHeight1) {
-                        var curH = tempH;
-                        if(curHeightArray1.Height < curH) {
-                            curHeightArray1.Height = curH;
+                    if(tempH < maxHeight1) {
+                        if(curHeightArray1.Height < tempH) {
+                            curHeightArray1.Height = tempH;
                         }
                         if(!curHeightArray1.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray1.Offset = true;
                         }
-                    }else if(tempH < MaxHeight2) {
-                        var curH = tempH - MaxHeight1;
-                        if(curHeightArray2.Height < curH) {
-                            curHeightArray2.Height = curH;
+                    } else {
+                        tempH -= maxHeight1;
+                        if(curHeightArray2.Height < tempH) {
+                            curHeightArray2.Height = tempH;
                         }
                         if(!curHeightArray2.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray2.Offset = true;
-                        }
-                    } else {
-                        var curH = tempH - MaxHeight2;
-                        if(curHeightArray3.Height < curH) {
-                            curHeightArray3.Height = curH;
-                        }
-                        if(!curHeightArray3.Offset && triangleInfo.Type == TriangleType.Offset) {
-                            curHeightArray3.Offset = true;
                         }
                     }
                 }
 
                 CurHeightArray1[index] = curHeightArray1;
                 CurHeightArray2[index] = curHeightArray2;
-                CurHeightArray3[index] = curHeightArray3;
             }
         }
 
@@ -589,7 +567,6 @@ namespace ShadowTest.Custom {
         private struct CalculateOffsetHeightJob : IJobParallelFor {
             [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray1;
             [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray2;
-            [ReadOnly] public NativeArray<TriangleHeightInfo> CurHeightArray3;
 
             [ReadOnly] public int ResolutionX;
             [ReadOnly] public int ResolutionY;
@@ -605,59 +582,74 @@ namespace ShadowTest.Custom {
 
             [ReadOnly] public float Bottom;
 
-            public NativeArray<float> CurOffsetHeightArray;
+            public NativeArray<float> CurOffsetHeightArray1;
+            public NativeArray<float> CurOffsetHeightArray2;
 
             // Each Execute call processes only an individual index.
             public void Execute(int index) {
                 var xIndex = index % ResolutionX;
                 var yIndex = index / ResolutionX;
 
-                var curSin = 0f;
-                var triangleHeightInfo = CurHeightArray1[index];
-                var curH = triangleHeightInfo.Height;
-                if(curH > Bottom) {
-                    for(var i = 1; i <= CheckLength; i++) {
-                        if(xIndex - i >= 0) {
-                            CalculateCurSin(ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index - i],
-                                StepX, HeightOffsetSinMin, HeightOffsetSinMax);
-                        }
-
-                        if(xIndex + i < ResolutionX) {
-                            CalculateCurSin(ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index + i],
-                                StepX, HeightOffsetSinMin, HeightOffsetSinMax);
-                        }
-
-                        if(yIndex - i >= 0) {
-                            CalculateCurSin(ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index - i * ResolutionX],
-                                StepY, HeightOffsetSinMin, HeightOffsetSinMax);
-                        }
-
-                        if(yIndex + i < ResolutionY) {
-                            CalculateCurSin(ref curSin, Bottom, curH, CheckHeightOffsetLayer, CurHeightArray1[index + i * ResolutionX], 
-                                StepY, HeightOffsetSinMin, HeightOffsetSinMax);
-                        }
-                    }
-
-                    var curOffset = math.round(curSin * HeightOffset * 100) / 100f;
-                    CurOffsetHeightArray[index] = curOffset;
-                } else {
-                    CurOffsetHeightArray[index] = 0;
-                }
+                CurOffsetHeightArray1[index] = CalculateCurOffset(index, xIndex, yIndex, CurHeightArray1, StepX, StepY, Bottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
+                CurOffsetHeightArray2[index] = CalculateCurOffset(index, xIndex, yIndex, CurHeightArray2, StepX, StepY, Bottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
             }
         }
 
         /// <summary>
         /// 保留两位小数
         /// </summary>
-        /// <param name="worldPos"></param>
-        /// <returns></returns>
         private static float3 LeftTwoDecimal(float3 worldPos) {
-            worldPos.x = math.ceil(worldPos.x * 100) / 100f;
-            worldPos.y = math.ceil(worldPos.y * 100) / 100f;
-            worldPos.z = math.ceil(worldPos.z * 100) / 100f;
+            worldPos.x = LeftTwoDecimal(worldPos.x);
+            worldPos.y = LeftTwoDecimal(worldPos.y);
+            worldPos.z = LeftTwoDecimal(worldPos.z);
             return worldPos;
         }
+        /// <summary>
+        /// 保留两位小数
+        /// </summary>
+        private static float LeftTwoDecimal(float value) {
+            return math.ceil(value * 100) / 100f;
+        }
 
+        /// <summary>
+        /// 计算高度偏移
+        /// </summary>
+        private static float CalculateCurOffset(int index, int xIndex, int yIndex, NativeArray<TriangleHeightInfo> curHeightArray, float stepX, float stepY, float bottom, int resolutionX, int resolutionY, int checkLength, bool checkHeightOffsetLayer, float heightOffsetSinMin, float heightOffsetSinMax, float heightOffset) {
+            var curSin = 0f;
+            var triangleHeightInfo = curHeightArray[index];
+            var curH = triangleHeightInfo.Height;
+            if(curH > bottom) {
+                for(var i = 1; i <= checkLength; i++) {
+                    if(xIndex - i >= 0) {
+                        CalculateCurSin(ref curSin, bottom, curH, checkHeightOffsetLayer, curHeightArray[index - i],
+                            stepX, heightOffsetSinMin, heightOffsetSinMax);
+                    }
+
+                    if(xIndex + i < resolutionX) {
+                        CalculateCurSin(ref curSin, bottom, curH, checkHeightOffsetLayer, curHeightArray[index + i],
+                            stepX, heightOffsetSinMin, heightOffsetSinMax);
+                    }
+
+                    if(yIndex - i >= 0) {
+                        CalculateCurSin(ref curSin, bottom, curH, checkHeightOffsetLayer, curHeightArray[index - i * resolutionX],
+                            stepY, heightOffsetSinMin, heightOffsetSinMax);
+                    }
+
+                    if(yIndex + i < resolutionY) {
+                        CalculateCurSin(ref curSin, bottom, curH, checkHeightOffsetLayer, curHeightArray[index + i * resolutionX], 
+                            stepY, heightOffsetSinMin, heightOffsetSinMax);
+                    }
+                }
+
+                return math.round(curSin * heightOffset * 100) / 100f;
+            } else {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 计算sin值
+        /// </summary>
         private static void CalculateCurSin(ref float curSin, float bottom, float curH, bool checkHeightOffsetLayer,
             TriangleHeightInfo curTest, float step, float heightOffsetSinMin, float heightOffsetSinMax) {
             if(curTest.Height <= bottom || (checkHeightOffsetLayer && !curTest.Offset)) return;
