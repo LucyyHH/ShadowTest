@@ -24,7 +24,7 @@
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature_local FSR_PROJECTOR_FOR_LWRP
-            #include "Assets/ShadowTest/ProjectorShdow/ProjectorForLWRP/Shaders/P4LWRP.cginc"
+            #include "Assets/ShadowTest/ProjectorShadow/ProjectorForLWRP/Shaders/P4LWRP.cginc"
             
             sampler2D _MaskTex;  
             float _Intensity;
