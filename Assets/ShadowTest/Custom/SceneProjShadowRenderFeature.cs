@@ -7,6 +7,7 @@ namespace HLLR {
     public class SceneProjShadowRenderFeature : ScriptableRendererFeature {
         public Material projShadowMaterial;
         public LayerMask layerMask;
+        public ComputeShader changeShadowDirComputeShader;
 
         private ShadowRenderPass _mPass;
         //private static readonly int MainLightDir = Shader.PropertyToID ("_MainLightDir");
@@ -18,7 +19,7 @@ namespace HLLR {
             //只有主相机需要添加
             if (renderingData.cameraData.renderType == CameraRenderType.Base) {
                 if (projShadowMaterial) {
-                    _mPass = new ShadowRenderPass(projShadowMaterial, layerMask);
+                    _mPass = new ShadowRenderPass(projShadowMaterial, layerMask, changeShadowDirComputeShader);
                 }
 
                 if (_mPass != null) {
@@ -36,13 +37,14 @@ namespace HLLR {
             };
 
             private readonly Material _overrideMaterial;
-        
+            private readonly ComputeShader _changeShadowDirComputeShader;
             private FilteringSettings _mFilteringSettings;
             
-            public ShadowRenderPass(Material material, LayerMask layerMask) {
+            public ShadowRenderPass(Material material, LayerMask layerMask, ComputeShader changeShadowDirComputeShader) {
                 renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
 
                 _overrideMaterial = material;
+                _changeShadowDirComputeShader = changeShadowDirComputeShader;
             
                 _mFilteringSettings = FilteringSettings.defaultValue;
                 _mFilteringSettings.layerMask = layerMask;
@@ -54,6 +56,12 @@ namespace HLLR {
             public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) {
                 if (_overrideMaterial) {
                     var drawingSettings = CreateDrawingSettings(_mShaderTagIdList, ref renderingData, SortingCriteria.CommonOpaque);
+
+                    // 如果影子方向发生变化，则重新计算
+                    if(true) {
+                        var mainKernel = _changeShadowDirComputeShader.FindKernel("CSMain");
+                        
+                    }
                     
                     drawingSettings.overrideMaterial = _overrideMaterial;
                     //这里不需要所以没有直接写CommandBuffer，在下面Feature的AddRenderPasses加入了渲染队列，底层还是CB
