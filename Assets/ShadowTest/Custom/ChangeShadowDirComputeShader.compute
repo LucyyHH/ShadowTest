@@ -2,15 +2,20 @@
 #pragma kernel CSMain
 
 Texture2D input_tex;
+half3 shadow_dir;
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float3> result;
+RWTexture2D<half> result;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
-    float3 input = input_tex[id.xy];
+    const half3 input = input_tex[id.xy];
+
+    half3 output = input * half3x3(1, 0, 0,
+        -shadow_dir.r / shadow_dir.g, 1 / shadow_dir.g, -shadow_dir.b / shadow_dir.g,
+        0, 0, 1);
     
-    result[id.xy] = float3(input.r, input.g, input.b);
+    result[output.rb] = output.g;
 }
