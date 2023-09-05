@@ -16,7 +16,6 @@
 		_MaxHeight1("Max Height 1", float) = 0
 		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
-		_MainLightDir("Main Light Dir", Vector) = (1, 1, 1, 1)
 	}
 	SubShader
 	{
@@ -103,7 +102,7 @@
  
 			v2f vert(appdata v)
 			{
-				const float3 light_dir = normalize(_MainLightDir.xyz);
+				const half3 light_dir = normalize(_MainLightDir.xyz);
 
 				v2f o;
 				UNITY_SETUP_INSTANCE_ID(v);
@@ -112,7 +111,10 @@
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
 				half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
-				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
+				half3 convert_pos = v.vertex * half3x3(1, 0, 0,
+														-light_dir.x / light_dir.y, 1 / light_dir.y, -light_dir.z / light_dir.y,
+														0, 0, 1);
+				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
 				float land_height = get_height(height, v.vertex.y) + _HeightTexBottom;
 
 				//面上的点

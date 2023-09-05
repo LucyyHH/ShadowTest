@@ -6,6 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ShadowTest.Custom {
     [CreateAssetMenu(fileName = "GenerateMapHeightTex", menuName = "ScriptableObject/GenerateMapHeightTex", order = 0)]
@@ -27,6 +28,10 @@ namespace ShadowTest.Custom {
 
         [Header("高度的分割线(百分比),高度以下存到r通道，以上存到g通道"), Range(0, 100)]
         public float highCuttingLine;
+        
+        [Header("改变灯光方向(默认竖直向下)")]
+        public bool changeLightDir;
+        public float3 lightDir = Vector3.down;
 
         [Header("边界(-x)限制")]
         public bool needLimitLeft;
@@ -72,6 +77,7 @@ namespace ShadowTest.Custom {
         private static readonly int MaxHeight1 = Shader.PropertyToID("_MaxHeight1");
         private static readonly int MaxHeight2 = Shader.PropertyToID("_MaxHeight2");
         private static readonly int MaxOffset = Shader.PropertyToID("_MaxOffset");
+        private static readonly int MainLightDir = Shader.PropertyToID("_MainLightDir");
 
         private const Allocator Allocator = Unity.Collections.Allocator.TempJob;
 
@@ -210,6 +216,12 @@ namespace ShadowTest.Custom {
                 }
             }
 
+            var shadowDirNormalize = math.normalize(lightDir);
+            var shadowMatrix = changeLightDir ? new float3x3(1, 0, 0,
+                                                                    -shadowDirNormalize.x / shadowDirNormalize.y, 1 / shadowDirNormalize.y, -shadowDirNormalize.z / shadowDirNormalize.y,
+                                                                    0, 0, 1)
+                                                        : float3x3.identity;
+            
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
             var handleMeshVerticesJob = new HandleMeshVerticesJob
             {
@@ -227,6 +239,8 @@ namespace ShadowTest.Custom {
                 BackLimit = backLimit,
                 TopLimit = topLimit,
                 BottomLimit = bottomLimit,
+                ChangeShadowDir = changeLightDir,
+                ShadowMatrix = shadowMatrix,
             };
             var meshVerticesHandle = handleMeshVerticesJob.Schedule(meshInfoVoList.Length, 64);
             meshVerticesHandle.Complete();
@@ -391,6 +405,7 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(MaxHeight1, maxHeight1);
             mapMaterial.SetFloat(MaxHeight2, maxHeight2);
             mapMaterial.SetFloat(MaxOffset, maxOffset);
+            mapMaterial.SetVector(MainLightDir, changeLightDir ? (Vector3)lightDir : Vector3.down);
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -416,6 +431,8 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float BackLimit;
             [ReadOnly] public float TopLimit;
             [ReadOnly] public float BottomLimit;
+            [ReadOnly] public bool ChangeShadowDir;
+            [ReadOnly] public float3x3 ShadowMatrix;
 
             public NativeArray<TriangleInfo> TriangleInfoArray;
 
@@ -438,6 +455,12 @@ namespace ShadowTest.Custom {
                     Normal = math.normalize(math.cross(meshInfoVo.MeshWordPos2 - meshInfoVo.MeshWordPos1,
                         meshInfoVo.MeshWordPos3 - meshInfoVo.MeshWordPos2))
                 };
+
+                if(ChangeShadowDir) {
+                    triangleInfo.Vertices1 = math.mul(meshInfoVo.MeshWordPos1, ShadowMatrix);
+                    triangleInfo.Vertices2 = math.mul(meshInfoVo.MeshWordPos2, ShadowMatrix);
+                    triangleInfo.Vertices3 = math.mul(meshInfoVo.MeshWordPos3, ShadowMatrix);
+                }
 
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
                     ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos1);
