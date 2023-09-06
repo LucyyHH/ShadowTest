@@ -218,7 +218,7 @@ namespace ShadowTest.Custom {
 
             var shadowDirNormalize = math.normalize(lightDir);
             var shadowMatrix = changeLightDir ? new float3x3(1, 0, 0,
-                                                                    -shadowDirNormalize.x / shadowDirNormalize.y, 1 / shadowDirNormalize.y, -shadowDirNormalize.z / shadowDirNormalize.y,
+                                                                    -shadowDirNormalize.x / shadowDirNormalize.y, -1 / shadowDirNormalize.y, -shadowDirNormalize.z / shadowDirNormalize.y,
                                                                     0, 0, 1)
                                                         : float3x3.identity;
             
@@ -405,7 +405,13 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(MaxHeight1, maxHeight1);
             mapMaterial.SetFloat(MaxHeight2, maxHeight2);
             mapMaterial.SetFloat(MaxOffset, maxOffset);
-            mapMaterial.SetVector(MainLightDir, changeLightDir ? (Vector3)lightDir : Vector3.down);
+            if(changeLightDir) {
+                mapMaterial.SetVector(MainLightDir, (Vector3)lightDir);
+                mapMaterial.EnableKeyword("_CONVERT_LIGHT_DIR");
+            } else {
+                mapMaterial.SetVector(MainLightDir, Vector3.down);
+                mapMaterial.DisableKeyword("_CONVERT_LIGHT_DIR");
+            }
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

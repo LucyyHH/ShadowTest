@@ -52,7 +52,7 @@
 
 			TEXTURE2D(_HeightTex);
 			SAMPLER(sampler_HeightTex);
-
+			
 			CBUFFER_START(UnityPerMaterial)
 			float4 _MainTex_ST;
 			float _Alpha;
@@ -77,7 +77,9 @@
 			UNITY_INSTANCING_BUFFER_START(Props)
 			// put more per-instance properties here
 			UNITY_INSTANCING_BUFFER_END(Props)
- 
+			
+ 			#pragma multi_compile_local __ _CONVERT_LIGHT_DIR
+
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -111,9 +113,12 @@
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
 				half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
-				half3 convert_pos = v.vertex * half3x3(1, 0, 0,
-														-light_dir.x / light_dir.y, 1 / light_dir.y, -light_dir.z / light_dir.y,
-														0, 0, 1);
+				half3 convert_pos = v.vertex;
+				#if _CONVERT_LIGHT_DIR
+				convert_pos *= half3x3(1, 0, 0,
+									-light_dir.x / light_dir.y, -1 / light_dir.y, -light_dir.z / light_dir.y,
+									0, 0, 1);
+				#endif
 				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
 				float land_height = get_height(height, v.vertex.y) + _HeightTexBottom;
 
