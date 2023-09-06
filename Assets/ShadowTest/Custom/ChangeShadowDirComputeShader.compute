@@ -14,7 +14,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     const half3 input = input_tex[id.xy];
 
     half3 output = input * half3x3(1, -shadow_dir.r / shadow_dir.g, 0,
-        0, 1 / shadow_dir.g, 0,
+        0, -1 / shadow_dir.g, 0,
         0, -shadow_dir.b / shadow_dir.g, 1);
     
     result[output.rb] = output.g;

@@ -77,7 +77,7 @@ namespace ShadowTest.Custom {
         private static readonly int MaxHeight1 = Shader.PropertyToID("_MaxHeight1");
         private static readonly int MaxHeight2 = Shader.PropertyToID("_MaxHeight2");
         private static readonly int MaxOffset = Shader.PropertyToID("_MaxOffset");
-        private static readonly int MainLightDir = Shader.PropertyToID("_MainLightDir");
+        private static readonly int ShadowDir = Shader.PropertyToID("_ShadowDir");
 
         private const Allocator Allocator = Unity.Collections.Allocator.TempJob;
 
@@ -406,10 +406,10 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(MaxHeight2, maxHeight2);
             mapMaterial.SetFloat(MaxOffset, maxOffset);
             if(changeLightDir) {
-                mapMaterial.SetVector(MainLightDir, (Vector3)lightDir);
+                mapMaterial.SetVector(ShadowDir, (Vector3)lightDir);
                 mapMaterial.EnableKeyword("_CONVERT_LIGHT_DIR");
             } else {
-                mapMaterial.SetVector(MainLightDir, Vector3.down);
+                mapMaterial.SetVector(ShadowDir, Vector3.down);
                 mapMaterial.DisableKeyword("_CONVERT_LIGHT_DIR");
             }
             
