@@ -19,13 +19,15 @@ namespace ShadowTest.Custom.Editor {
             
             var iterator = serializedObject.GetIterator();
             var curNeedShow = true;
-            while(iterator.NextVisible(true)) {
+            iterator.NextVisible(true);
+            EditorGUILayout.PropertyField(iterator);
+            while(iterator.NextVisible(false)) {
                 var curShow = true;
                 
                 if(iterator.name == "mapGo") {
                     curNeedShow = !ReferenceEquals(_generateMapHeightTex.mapGo, null);
-                } else if(iterator.name == "changeShadowDir") {
-                    curNeedShow = _generateMapHeightTex.changeLightDir;
+                } else if(iterator.name == "fixedShadowDir") {
+                    curNeedShow = _generateMapHeightTex.fixedShadowDir;
                 } else if(iterator.name == "needLimitLeft") {
                     curNeedShow = _generateMapHeightTex.needLimitLeft;
                 } else if(iterator.name == "needLimitRight") {
@@ -47,7 +49,7 @@ namespace ShadowTest.Custom.Editor {
                 }
                 
                 if(curShow) {
-                    EditorGUILayout.PropertyField(iterator);
+                    EditorGUILayout.PropertyField(iterator, includeChildren: false);
                 }
             }
             

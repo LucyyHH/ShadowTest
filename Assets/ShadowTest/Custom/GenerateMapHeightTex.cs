@@ -29,9 +29,9 @@ namespace ShadowTest.Custom {
         [Header("高度的分割线(百分比),高度以下存到r通道，以上存到g通道"), Range(0, 100)]
         public float highCuttingLine;
         
-        [Header("改变灯光方向(默认竖直向下)")]
-        public bool changeLightDir;
-        public float3 lightDir = Vector3.down;
+        [Header("固定影子(灯光)方向")]
+        public bool fixedShadowDir;
+        public float3 shadowDir = Vector3.down;
 
         [Header("边界(-x)限制")]
         public bool needLimitLeft;
@@ -216,8 +216,8 @@ namespace ShadowTest.Custom {
                 }
             }
 
-            var shadowDirNormalize = math.normalize(lightDir);
-            var shadowMatrix = changeLightDir ? new float3x3(1, 0, 0,
+            var shadowDirNormalize = math.normalize(shadowDir);
+            var shadowMatrix = fixedShadowDir ? new float3x3(1, 0, 0,
                                                                     -shadowDirNormalize.x / shadowDirNormalize.y, -1 / shadowDirNormalize.y, -shadowDirNormalize.z / shadowDirNormalize.y,
                                                                     0, 0, 1)
                                                         : float3x3.identity;
@@ -239,7 +239,7 @@ namespace ShadowTest.Custom {
                 BackLimit = backLimit,
                 TopLimit = topLimit,
                 BottomLimit = bottomLimit,
-                ChangeShadowDir = changeLightDir,
+                ChangeShadowDir = fixedShadowDir,
                 ShadowMatrix = shadowMatrix,
             };
             var meshVerticesHandle = handleMeshVerticesJob.Schedule(meshInfoVoList.Length, 64);
@@ -405,12 +405,12 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(MaxHeight1, maxHeight1);
             mapMaterial.SetFloat(MaxHeight2, maxHeight2);
             mapMaterial.SetFloat(MaxOffset, maxOffset);
-            if(changeLightDir) {
-                mapMaterial.SetVector(ShadowDir, (Vector3)lightDir);
-                mapMaterial.EnableKeyword("_CONVERT_LIGHT_DIR");
+            if(fixedShadowDir) {
+                mapMaterial.SetVector(ShadowDir, (Vector3)shadowDir);
+                mapMaterial.EnableKeyword("_FIXED_LIGHT_DIR");
             } else {
                 mapMaterial.SetVector(ShadowDir, Vector3.down);
-                mapMaterial.DisableKeyword("_CONVERT_LIGHT_DIR");
+                mapMaterial.DisableKeyword("_FIXED_LIGHT_DIR");
             }
             
             AssetDatabase.SaveAssets();

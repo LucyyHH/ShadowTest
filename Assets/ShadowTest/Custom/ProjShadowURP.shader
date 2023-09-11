@@ -16,7 +16,7 @@
 		_MaxHeight1("Max Height 1", float) = 0
 		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
-		_MainLightDir("Main Light Dir(Invalid if Convert)", Vector) = (1, 1, 1, 1)
+		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
 	}
 	SubShader
 	{
@@ -80,7 +80,7 @@
 			// put more per-instance properties here
 			UNITY_INSTANCING_BUFFER_END(Props)
 			
- 			#pragma multi_compile_local __ _CONVERT_LIGHT_DIR
+ 			#pragma multi_compile_local __ _FIXED_LIGHT_DIR
 
 			struct appdata
 			{
@@ -106,20 +106,18 @@
  
 			v2f vert(appdata v)
 			{
-				 
-
 				v2f o;
 				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
-				half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
+				const half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
 				half3 convert_pos = v.vertex;
 				half3 light_dir;
-				#if _CONVERT_LIGHT_DIR
+				#if !_FIXED_LIGHT_DIR
 					light_dir = normalize(_ShadowDir.xyz);
-					convert_pos *= half3x3(1, 0, 0,
+					convert_pos = convert_pos * half3x3(1, 0, 0,
 										-light_dir.x / light_dir.y, -1 / light_dir.y, -light_dir.z / light_dir.y,
 										0, 0, 1);
 				#else
@@ -139,10 +137,10 @@
 				const float t = dot(p - orig, n)/dot(d, n);
 				v.vertex.xyz += d * t;
 
-				#if !_CONVERT_LIGHT_DIR
+				/*#if !_FIXED_LIGHT_DIR
 				const half3 height1 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
-				v.vertex.xyz += d * (v.vertex.y - (get_height(height1, v.vertex.y) + _HeightTexBottom)) / 2;
-				#endif
+				v.vertex.y = get_height(height1, v.vertex.y) + _HeightTexBottom;
+				#endif*/
 				
 				v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
 				
