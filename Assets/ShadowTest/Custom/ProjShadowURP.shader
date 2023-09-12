@@ -115,14 +115,17 @@
 				//计算高度
 				half3 convert_pos = v.vertex;
 				half3 light_dir;
-				#if !_FIXED_LIGHT_DIR
+				#if _FIXED_LIGHT_DIR
 					light_dir = normalize(_ShadowDir.xyz);
-					convert_pos = convert_pos * half3x3(1, 0, 0,
+					convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 										-light_dir.x / light_dir.y, -1 / light_dir.y, -light_dir.z / light_dir.y,
-										0, 0, 1);
+										0, 0, 1));
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
 				#endif
+
+				
+				
 				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
 				float land_height = get_height(height, v.vertex.y) + _HeightTexBottom;
 
