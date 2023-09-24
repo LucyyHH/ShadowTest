@@ -6,7 +6,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace ShadowTest.Custom {
     [CreateAssetMenu(fileName = "GenerateMapHeightTex", menuName = "ScriptableObject/GenerateMapHeightTex", order = 0)]
@@ -221,6 +220,10 @@ namespace ShadowTest.Custom {
                                                                     -shadowDirNormalize.x / shadowDirNormalize.y, -1 / shadowDirNormalize.y, -shadowDirNormalize.z / shadowDirNormalize.y,
                                                                     0, 0, 1)
                                                         : float3x3.identity;
+            /*var shadowMatrix = fixedShadowDir ? new float3x3(1, -shadowDirNormalize.x / shadowDirNormalize.y, 0,
+                    0, -1 / shadowDirNormalize.y, 0,
+                    0, -shadowDirNormalize.z / shadowDirNormalize.y, 1)
+                : float3x3.identity;*/
             
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
             var handleMeshVerticesJob = new HandleMeshVerticesJob
@@ -308,7 +311,7 @@ namespace ShadowTest.Custom {
                 Left = mapBoundary.Left,
                 Bottom = mapBoundary.Bottom,
                 Back = mapBoundary.Back,
-                maxHeight1 = maxHeight1,
+                MaxHeight1 = maxHeight1,
                 CurHeightArray1 = curHeightArray1,
                 CurHeightArray2 = curHeightArray2
             };
@@ -377,6 +380,9 @@ namespace ShadowTest.Custom {
             var fileStream = File.Open($"{Application.dataPath}{texturePath}", FileMode.OpenOrCreate);
             fileStream.Write(dataBytes, 0, dataBytes.Length);
             fileStream.Close();
+            
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
             //是否有材质球，没有则创建并保存
             if(mapMaterial == null) {
@@ -504,7 +510,7 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float Back;
             [ReadOnly] public float Bottom;
             
-            [ReadOnly] public float maxHeight1;
+            [ReadOnly] public float MaxHeight1;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray1;
             public NativeArray<TriangleHeightInfo> CurHeightArray2;
@@ -566,7 +572,7 @@ namespace ShadowTest.Custom {
                         -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
-                    if(tempH < maxHeight1) {
+                    if(tempH < MaxHeight1) {
                         if(curHeightArray1.Height < tempH) {
                             curHeightArray1.Height = tempH;
                         }
@@ -574,7 +580,7 @@ namespace ShadowTest.Custom {
                             curHeightArray1.Offset = true;
                         }
                     } else {
-                        tempH -= maxHeight1;
+                        tempH -= MaxHeight1;
                         if(curHeightArray2.Height < tempH) {
                             curHeightArray2.Height = tempH;
                         }
