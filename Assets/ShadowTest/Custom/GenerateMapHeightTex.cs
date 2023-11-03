@@ -66,16 +66,16 @@ namespace ShadowTest.Custom {
         [Header("需要生成高度的特殊层(楼梯等有问题的)")]
         public LayerMask heightOffsetLayer;
 
-        private static readonly int HeightTex = Shader.PropertyToID("_HeightTex");
-        private static readonly int HeightTexLeft = Shader.PropertyToID("_HeightTexLeft");
-        private static readonly int HeightTexLength = Shader.PropertyToID("_HeightTexLength");
-        private static readonly int HeightTexBack = Shader.PropertyToID("_HeightTexBack");
-        private static readonly int HeightTexWidth = Shader.PropertyToID("_HeightTexWidth");
-        private static readonly int HeightTexBottom = Shader.PropertyToID("_HeightTexBottom");
-        private static readonly int HeightTexHigh = Shader.PropertyToID("_HeightTexHigh");
-        private static readonly int MaxHeight1 = Shader.PropertyToID("_MaxHeight1");
-        private static readonly int MaxHeight2 = Shader.PropertyToID("_MaxHeight2");
-        private static readonly int MaxOffset = Shader.PropertyToID("_MaxOffset");
+        private static readonly int ShaderHeightTex = Shader.PropertyToID("_HeightTex");
+        private static readonly int ShaderHeightTexLeft = Shader.PropertyToID("_HeightTexLeft");
+        private static readonly int ShaderHeightTexLength = Shader.PropertyToID("_HeightTexLength");
+        private static readonly int ShaderHeightTexBack = Shader.PropertyToID("_HeightTexBack");
+        private static readonly int ShaderHeightTexWidth = Shader.PropertyToID("_HeightTexWidth");
+        private static readonly int ShaderHeightTexBottom = Shader.PropertyToID("_HeightTexBottom");
+        private static readonly int ShaderHeightTexHigh = Shader.PropertyToID("_HeightTexHigh");
+        private static readonly int ShaderMaxHeight1 = Shader.PropertyToID("_MaxHeight1");
+        private static readonly int ShaderMaxHeight2 = Shader.PropertyToID("_MaxHeight2");
+        private static readonly int ShaderMaxOffset = Shader.PropertyToID("_MaxOffset");
         private static readonly int ShadowDir = Shader.PropertyToID("_ShadowDir");
 
         private const Allocator Allocator = Unity.Collections.Allocator.TempJob;
@@ -401,16 +401,16 @@ namespace ShadowTest.Custom {
             heightTextureImporter.isReadable = false;
             heightTextureImporter.textureCompression = TextureImporterCompression.Compressed;
             
-            mapMaterial.SetTexture(HeightTex, AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets{texturePath}"));
-            mapMaterial.SetFloat(HeightTexLeft, mapBoundary.Left);
-            mapMaterial.SetFloat(HeightTexLength, length);
-            mapMaterial.SetFloat(HeightTexBack, mapBoundary.Back);
-            mapMaterial.SetFloat(HeightTexWidth, width);
-            mapMaterial.SetFloat(HeightTexBottom, mapBoundary.Bottom);
-            mapMaterial.SetFloat(HeightTexHigh, high);
-            mapMaterial.SetFloat(MaxHeight1, maxHeight1);
-            mapMaterial.SetFloat(MaxHeight2, maxHeight2);
-            mapMaterial.SetFloat(MaxOffset, maxOffset);
+            mapMaterial.SetTexture(ShaderHeightTex, AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets{texturePath}"));
+            mapMaterial.SetFloat(ShaderHeightTexLeft, mapBoundary.Left);
+            mapMaterial.SetFloat(ShaderHeightTexLength, length);
+            mapMaterial.SetFloat(ShaderHeightTexBack, mapBoundary.Back);
+            mapMaterial.SetFloat(ShaderHeightTexWidth, width);
+            mapMaterial.SetFloat(ShaderHeightTexBottom, mapBoundary.Bottom);
+            mapMaterial.SetFloat(ShaderHeightTexHigh, high);
+            mapMaterial.SetFloat(ShaderMaxHeight1, maxHeight1);
+            mapMaterial.SetFloat(ShaderMaxHeight2, maxHeight2);
+            mapMaterial.SetFloat(ShaderMaxOffset, maxOffset);
             if(fixedShadowDir) {
                 mapMaterial.SetVector(ShadowDir, (Vector3)shadowDir);
                 mapMaterial.EnableKeyword("_FIXED_LIGHT_DIR");

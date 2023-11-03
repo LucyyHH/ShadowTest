@@ -23,9 +23,9 @@ MonoBehaviour:
   highCuttingLine: 30
   fixedShadowDir: 1
   shadowDir:
-    x: -1
+    x: 0
     y: -1
-    z: -1
+    z: 0
   needLimitLeft: 1
   leftLimit: -13
   needLimitRight: 1

@@ -13,12 +13,10 @@ MonoBehaviour:
   m_Name: SceneProjShadowRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  projShadowMaterial: {fileID: 2100000, guid: 136ea7830fd474d4397aada4d655a988, type: 2}
+  projShadowMaterial: {fileID: 2100000, guid: 68d2b29282e236848b236d4f1ebedcc6, type: 2}
   layerMask:
     serializedVersion: 2
     m_Bits: 64
-  changeShadowDirComputeShader: {fileID: 7200000, guid: 00bda3221649bd941852d6ea333c7b73,
-    type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
