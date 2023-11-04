@@ -17,6 +17,7 @@
 		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
 		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
+		//_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
 	}
 	SubShader
 	{
@@ -123,7 +124,7 @@
                      /*convert_pos = mul(convert_pos, half3x3(1, -light_dir.x / light_dir.y, 0,
                                         0, -1 / light_dir.y, 0,
                                         0, -light_dir.z / light_dir.y, 1)); */
-									light_dir = normalize(_MainLightDir.xyz);
+									//light_dir = normalize(_MainLightDir.xyz);
 
 				#else
 					light_dir = normalize(_MainLightDir.xyz);

@@ -54,4 +54,5 @@ Material:
     - _MaxOffset: 0.45
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
+    - _ShadowDir: {r: -1, g: -1, b: 0, a: 0}
   m_BuildTextureStacks: []
