@@ -17,7 +17,7 @@
 		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
 		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
-		//_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
+		[HideInInspector]_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
 	}
 	SubShader
 	{
