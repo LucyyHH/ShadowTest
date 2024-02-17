@@ -25,7 +25,7 @@ namespace ShadowTest.Custom {
         [Header("保存路径(从'Assets/'开始)")]
         public string path;
 
-        [Header("高度的分割线(百分比),高度以下存到r通道，以上存到g通道"), Range(0, 100)]
+        [Header("高度的分割线(百分比),高度以下存到r通道，以上存到g通道"), Range(0, 1)]
         public float highCuttingLine;
         
         [Header("固定影子(灯光)方向")]
@@ -268,23 +268,18 @@ namespace ShadowTest.Custom {
             if(needLimitLeft && mapBoundary.Left < leftLimit) {
                 mapBoundary.Left = leftLimit;
             }
-
             if(needLimitRight && mapBoundary.Right > rightLimit) {
                 mapBoundary.Right = rightLimit;
             }
-
             if(needLimitBottom && mapBoundary.Bottom < bottomLimit) {
                 mapBoundary.Bottom = bottomLimit;
             }
-
             if(needLimitTop && mapBoundary.Top > topLimit) {
                 mapBoundary.Top = topLimit;
             }
-
             if(needLimitBack && mapBoundary.Back < backLimit) {
                 mapBoundary.Back = backLimit;
             }
-
             if(needLimitFront && mapBoundary.Front > frontLimit) {
                 mapBoundary.Front = frontLimit;
             }
@@ -296,7 +291,7 @@ namespace ShadowTest.Custom {
             var stepY = 1.0f / resolutionY * width;
             var texture2D = new Texture2D(resolutionX, resolutionY);
 
-            var maxHeight1 = LeftTwoDecimal(high * (highCuttingLine / 100f));
+            var maxHeight1 = LeftTwoDecimal(high * highCuttingLine);
             var maxHeight2 = high - maxHeight1;
 
             var pixelCount = resolutionX * resolutionY;

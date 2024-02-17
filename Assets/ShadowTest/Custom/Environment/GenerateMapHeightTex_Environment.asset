@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
+%TAG !u! tag:yousandi.cn,2023:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20,12 +20,12 @@ MonoBehaviour:
   resolutionX: 256
   resolutionY: 256
   path: ShadowTest/Custom/Environment
-  highCuttingLine: 80
+  highCuttingLine: 0.5
   fixedShadowDir: 1
   shadowDir:
     x: -1
     y: -1
-    z: -1
+    z: 0
   needLimitLeft: 1
   leftLimit: -13
   needLimitRight: 1

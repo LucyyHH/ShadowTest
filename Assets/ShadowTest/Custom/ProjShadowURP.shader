@@ -97,7 +97,7 @@
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
-			float get_height(half3 height, const float original_y)
+			float get_height(half2 height, const float original_y)
 			{
 				const float height1 = height.r * _MaxHeight1;
 				const float height2 = height.g * _MaxHeight2 + _MaxHeight1;
@@ -120,12 +120,11 @@
 					light_dir = normalize(_ShadowDir.xyz);
 					convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									-light_dir.x / light_dir.y, -1 / light_dir.y, -light_dir.z / light_dir.y,
-									0, 0, 1)); 
-                     /*convert_pos = mul(convert_pos, half3x3(1, -light_dir.x / light_dir.y, 0,
-                                        0, -1 / light_dir.y, 0,
-                                        0, -light_dir.z / light_dir.y, 1)); */
+									0, 0, 1));
+					/*convert_pos = mul(convert_pos, half3x3(1, -light_dir.x / light_dir.y, 0,
+					                0, -1 / light_dir.y, 0,
+					                0, -light_dir.z / light_dir.y, 1));*/
 									//light_dir = normalize(_MainLightDir.xyz);
-
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
 				#endif
@@ -133,7 +132,7 @@
 				
 				
 				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
-				float land_height = get_height(height, v.vertex.y) + _HeightTexBottom;
+				float land_height = get_height(height.rg, v.vertex.y) + _HeightTexBottom;
 
 				//面上的点
 				const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
