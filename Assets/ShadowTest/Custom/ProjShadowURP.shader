@@ -118,13 +118,16 @@
 				half3 light_dir;
 				#if _FIXED_LIGHT_DIR
 					light_dir = normalize(_ShadowDir.xyz);
-					convert_pos = mul(convert_pos, half3x3(1, 0, 0,
+					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									-light_dir.x / light_dir.y, -1 / light_dir.y, -light_dir.z / light_dir.y,
-									0, 0, 1));
+									0, 0, 1));*/
 					/*convert_pos = mul(convert_pos, half3x3(1, -light_dir.x / light_dir.y, 0,
 					                0, -1 / light_dir.y, 0,
 					                0, -light_dir.z / light_dir.y, 1));*/
 									//light_dir = normalize(_MainLightDir.xyz);
+					convert_pos = mul(convert_pos, half3x3(1, 0, 0,
+										-light_dir.x, -light_dir.y, -light_dir.z,
+										0, 0, 1));
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
 				#endif

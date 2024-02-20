@@ -224,6 +224,10 @@ namespace ShadowTest.Custom {
                     0, -1 / shadowDirNormalize.y, 0,
                     0, -shadowDirNormalize.z / shadowDirNormalize.y, 1)
                 : float3x3.identity;*/
+            shadowMatrix = fixedShadowDir ? new float3x3(1, 0, 0,
+                    -shadowDirNormalize.x, -shadowDirNormalize.y, -shadowDirNormalize.z,
+                    0, 0, 1)
+                : float3x3.identity;
             
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
             var handleMeshVerticesJob = new HandleMeshVerticesJob
