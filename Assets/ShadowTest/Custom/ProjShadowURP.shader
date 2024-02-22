@@ -122,14 +122,13 @@
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
 									0, 0, 1));*/
-					convert_pos = mul(convert_pos, half3x3(1, normalize_y.x, 0,
+					convert_pos = mul(half3x3(1, normalize_y.x, 0,
 					                0, normalize_y.y, 0,
-					                0, normalize_y.z, 1));
+					                0, normalize_y.z, 1), convert_pos);
 									//light_dir = normalize(_MainLightDir.xyz);
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
 				#endif
-
 				
 				
 				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
