@@ -51,7 +51,7 @@ Material:
     - _LandHeightOffset: 0.2
     - _MaxHeight1: 3.51
     - _MaxHeight2: 3.5000002
-    - _MaxOffset: 0.45
+    - _MaxOffset: 0.41
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
     - _ShadowDir: {r: -1, g: -1, b: 0, a: 0}
