@@ -134,6 +134,10 @@
 				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
 				float land_height = get_height(height.rg, v.vertex.y) + _HeightTexBottom;
 
+				#if _FIXED_LIGHT_DIR
+					land_height = mul(light_dir, land_height);
+				#endif
+
 				//面上的点
 				const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
 				//源点

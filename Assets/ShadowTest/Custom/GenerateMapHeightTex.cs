@@ -215,7 +215,7 @@ namespace ShadowTest.Custom {
                 }
             }
 
-            var shadowDirNormalize = math.normalize(new float3(-shadowDir.x / shadowDir.y, -1 / shadowDir.y, -shadowDir.z / shadowDir.y));
+            var shadowDirNormalize = math.normalizesafe(new float3(-shadowDir.x / shadowDir.y, -1 / shadowDir.y, -shadowDir.z / shadowDir.y));
             /*var shadowMatrix = fixedShadowDir ? math.orthonormalize(new float3x3(1, 0, 0,
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
@@ -294,6 +294,12 @@ namespace ShadowTest.Custom {
             var maxHeight1 = LeftTwoDecimal(high * highCuttingLine);
             var maxHeight2 = high - maxHeight1;
 
+            var normalizeShadowDir = math.normalizesafe(shadowDir);
+            var invShadowMatrix = fixedShadowDir ? new float3x3(1, normalizeShadowDir.x, 0,
+                    0, normalizeShadowDir.y, 0,
+                    0, normalizeShadowDir.z, 1)
+                : float3x3.identity;
+
             var pixelCount = resolutionX * resolutionY;
             var curHeightArray1 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
             var curHeightArray2 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
@@ -308,7 +314,9 @@ namespace ShadowTest.Custom {
                 Back = mapBoundary.Back,
                 MaxHeight1 = maxHeight1,
                 CurHeightArray1 = curHeightArray1,
-                CurHeightArray2 = curHeightArray2
+                CurHeightArray2 = curHeightArray2,
+                ShadowMatrix = shadowMatrix,
+                InvShadowMatrix = invShadowMatrix
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
             calculateHeightHandle.Complete();
@@ -473,11 +481,11 @@ namespace ShadowTest.Custom {
                 }
 
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos1);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices1);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos2);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices2);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos3);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices3);
 
                 if(NeedLimitRight && triangleInfo.Left > RightLimit ||
                    NeedLimitLeft && triangleInfo.Right < LeftLimit ||
@@ -509,6 +517,9 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float Bottom;
             
             [ReadOnly] public float MaxHeight1;
+            
+            [ReadOnly] public float3x3 ShadowMatrix;
+            [ReadOnly] public float3x3 InvShadowMatrix;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray1;
             public NativeArray<TriangleHeightInfo> CurHeightArray2;
@@ -530,6 +541,9 @@ namespace ShadowTest.Custom {
                     Height = 0f,
                     Offset = false
                 };
+
+                // 当前像素点转化到新坐标系后的坐标
+                var curPoint = math.mul(ShadowMatrix, new float3(curPosX, 0, curPosY));
                 
                 foreach(var triangleInfo in TriangleInfoArray) {
                     if(triangleInfo.Type == TriangleType.Unavailable) {
@@ -543,29 +557,26 @@ namespace ShadowTest.Custom {
                     }
 
                     // 检测是否在三角形内
-                    var tempPoint = new float3(curPosX, 0, curPosY);
-                    if(!IsInsideTriangle(tempPoint, triangleInfo.Vertices1, triangleInfo.Vertices2,
-                           triangleInfo.Vertices3)) {
+                    var tempPoint = curPoint;
+                    if(!IsInsideTriangle(tempPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
                         continue;
                     }
 
                     // 如果在三角形内,则计算高度
-                    if(curPosX - triangleInfo.Vertices1.x > 0.001f || curPosY - triangleInfo.Vertices1.z > 0.001f) {
+                    if(tempPoint.x - triangleInfo.Vertices1.x > 0.001f || tempPoint.z - triangleInfo.Vertices1.z > 0.001f) {
                         tempPoint.x = curPosX - triangleInfo.Vertices1.x;
                         tempPoint.z = curPosY - triangleInfo.Vertices1.z;
                         tempPoint.y = triangleInfo.Vertices1.y;
-                    } else if(curPosX - triangleInfo.Vertices2.x > 0.001f || curPosY - triangleInfo.Vertices2.z > 0.001f) {
+                    } else if(tempPoint.x - triangleInfo.Vertices2.x > 0.001f || tempPoint.z - triangleInfo.Vertices2.z > 0.001f) {
                         tempPoint.x = curPosX - triangleInfo.Vertices2.x;
                         tempPoint.z = curPosY - triangleInfo.Vertices2.z;
                         tempPoint.y = triangleInfo.Vertices2.y;
-                    }
-
-                    if(curPosX - triangleInfo.Vertices3.x > 0.001f || curPosY - triangleInfo.Vertices3.z > 0.001f) {
+                    } else if(tempPoint.x - triangleInfo.Vertices3.x > 0.001f || tempPoint.z - triangleInfo.Vertices3.z > 0.001f) {
                         tempPoint.x = curPosX - triangleInfo.Vertices3.x;
                         tempPoint.z = curPosY - triangleInfo.Vertices3.z;
                         tempPoint.y = triangleInfo.Vertices3.y;
                     }
-
+                    //tempPoint = math.mul(InvShadowMatrix, tempPoint);
                     var tempH =
                         -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;

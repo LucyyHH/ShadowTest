@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
+%TAG !u! tag:yousandi.cn,2023:
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -49,8 +49,8 @@ Material:
     - _HeightTexWidth: 32
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.02
-    - _MaxHeight1: 0.01
-    - _MaxHeight2: 0
+    - _MaxHeight1: 0.3
+    - _MaxHeight2: -0.29000002
     - _MaxOffset: 0
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
