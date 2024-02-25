@@ -48,9 +48,9 @@ Material:
     - _HeightTexLength: 34
     - _HeightTexWidth: 32
     - _LandHeight: 0.05
-    - _LandHeightOffset: 0.2
-    - _MaxHeight1: 2.48
-    - _MaxHeight2: 2.4768186
+    - _LandHeightOffset: 0.1
+    - _MaxHeight1: 4.96
+    - _MaxHeight2: -0.0031814575
     - _MaxOffset: 0.45
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
