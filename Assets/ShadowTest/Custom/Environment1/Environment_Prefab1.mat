@@ -41,16 +41,16 @@ Material:
     - _FinalHeight1: 2.12
     - _FinalHeight2: 2.12
     - _FinalHeight3: 27.79
-    - _HeightTexBack: -2
-    - _HeightTexBottom: -0
-    - _HeightTexHigh: 0.01
-    - _HeightTexLeft: -13
-    - _HeightTexLength: 34
-    - _HeightTexWidth: 32
+    - _HeightTexBack: -1.51
+    - _HeightTexBottom: 0.0070710676
+    - _HeightTexHigh: 0
+    - _HeightTexLeft: -11.737071
+    - _HeightTexLength: 32
+    - _HeightTexWidth: 30
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.02
-    - _MaxHeight1: 0.3
-    - _MaxHeight2: -0.29000002
+    - _MaxHeight1: 0
+    - _MaxHeight2: 0
     - _MaxOffset: 0
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}

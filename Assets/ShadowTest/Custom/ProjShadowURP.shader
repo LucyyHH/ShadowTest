@@ -131,23 +131,29 @@
 				#endif
 				
 				
-				const half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
-				float land_height = get_height(height.rg, v.vertex.y) + _HeightTexBottom;
+				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
-					land_height = mul(light_dir, land_height);
+					v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
+					                0, -light_dir.y, 0,
+					                0, -light_dir.z, 1), convert_pos);
+				
+					//v.vertex = mul(light_dir, convert_pos);
+					//height = mul(light_dir, height);
+				#else
+					//面上的点
+					const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
+					//源点
+					const float3 orig = v.vertex;
+					//面的法线
+					const float3 n = float3(0, -1, 0);
+					//光的方向
+					const float3 d = light_dir;
+					const float t = dot(p - orig, n)/dot(d, n);
+					v.vertex.xyz += d * t;
 				#endif
-
-				//面上的点
-				const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
-				//源点
-				const float3 orig = v.vertex;
-				//面的法线
-				const float3 n = float3(0, -1, 0);
-				//光的方向
-				const float3 d = light_dir;
-				const float t = dot(p - orig, n)/dot(d, n);
-				v.vertex.xyz += d * t;
+				
 
 				/*#if !_FIXED_LIGHT_DIR
 				const half3 height1 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);

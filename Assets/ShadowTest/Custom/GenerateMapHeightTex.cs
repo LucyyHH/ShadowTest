@@ -478,6 +478,8 @@ namespace ShadowTest.Custom {
                     triangleInfo.Vertices1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
                     triangleInfo.Vertices2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
                     triangleInfo.Vertices3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
+                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.Vertices2 - triangleInfo.Vertices1,
+                        triangleInfo.Vertices3 - triangleInfo.Vertices2));
                 }
 
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
@@ -577,8 +579,7 @@ namespace ShadowTest.Custom {
                         tempPoint.y = triangleInfo.Vertices3.y;
                     }
                     //tempPoint = math.mul(InvShadowMatrix, tempPoint);
-                    var tempH =
-                        -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
+                    var tempH = -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
                     if(tempH < MaxHeight1) {
