@@ -93,7 +93,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				float2 uv : TEXCOORD0;
+				float3 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -112,9 +112,11 @@
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
+				//源点
+				const float3 orig = v.vertex;
 				const half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
-				half3 convert_pos = v.vertex;
+				float3 convert_pos = v.vertex;
 				half3 light_dir;
 				#if _FIXED_LIGHT_DIR
 					light_dir = normalize(_ShadowDir.xyz);
@@ -130,22 +132,19 @@
 					light_dir = normalize(_MainLightDir.xyz);
 				#endif
 				
-				
 				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
 				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
-					v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
+					/*v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
 					                0, -light_dir.y, 0,
-					                0, -light_dir.z, 1), convert_pos);
-				
+					                0, -light_dir.z, 1), convert_pos);*/
+				v.vertex.xyz = convert_pos;
 					//v.vertex = mul(light_dir, convert_pos);
 					//height = mul(light_dir, height);
 				#else
 					//面上的点
-					const float3 p = float3(v.vertex.x, land_height, v.vertex.z);
-					//源点
-					const float3 orig = v.vertex;
+					const float3 p = convert_pos;
 					//面的法线
 					const float3 n = float3(0, -1, 0);
 					//光的方向
@@ -163,7 +162,9 @@
 				v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+				// 是否需要显示阴影
+				o.uv.z = step(0, dot(light_dir, v.vertex - orig));
 
 				return o;
 			}
@@ -171,10 +172,10 @@
 			float4 frag(v2f i) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(i);
-				float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-				clip(tex.a - 0.5);
+				/*float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+				clip(tex.a - 0.5);*/
 				
-				return half4(0, 0, 0, _Alpha);
+				return half4(0, 0, 0, i.uv.z * _Alpha);
 			}
 			
 			ENDHLSL

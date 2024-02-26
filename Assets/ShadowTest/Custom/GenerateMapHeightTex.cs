@@ -114,6 +114,9 @@ namespace ShadowTest.Custom {
             public float3 Vertices1;
             public float3 Vertices2;
             public float3 Vertices3;
+            /// <summary>
+            /// 世界空间下的法线
+            /// </summary>
             public float3 Normal;
         }
 
@@ -478,16 +481,16 @@ namespace ShadowTest.Custom {
                     triangleInfo.Vertices1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
                     triangleInfo.Vertices2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
                     triangleInfo.Vertices3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
-                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.Vertices2 - triangleInfo.Vertices1,
-                        triangleInfo.Vertices3 - triangleInfo.Vertices2));
+                    triangleInfo.Normal = math.normalize(math.cross(meshInfoVo.MeshWordPos2 - meshInfoVo.MeshWordPos1,
+                        meshInfoVo.MeshWordPos3 - meshInfoVo.MeshWordPos2));
                 }
 
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices1);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos1);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices2);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos2);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices3);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos3);
 
                 if(NeedLimitRight && triangleInfo.Left > RightLimit ||
                    NeedLimitLeft && triangleInfo.Right < LeftLimit ||
