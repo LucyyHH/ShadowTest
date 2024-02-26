@@ -114,6 +114,9 @@ namespace ShadowTest.Custom {
             public float3 Vertices1;
             public float3 Vertices2;
             public float3 Vertices3;
+            public float3 WorldPos1;
+            public float3 WorldPos2;
+            public float3 WorldPos3;
             /// <summary>
             /// 世界空间下的法线
             /// </summary>
@@ -478,6 +481,9 @@ namespace ShadowTest.Custom {
                     /*triangleInfo.Vertices1 = math.mul(meshInfoVo.MeshWordPos1, ShadowMatrix);
                     triangleInfo.Vertices2 = math.mul(meshInfoVo.MeshWordPos2, ShadowMatrix);
                     triangleInfo.Vertices3 = math.mul(meshInfoVo.MeshWordPos3, ShadowMatrix);*/
+                    triangleInfo.WorldPos1 = meshInfoVo.MeshWordPos1;
+                    triangleInfo.WorldPos2 = meshInfoVo.MeshWordPos2;
+                    triangleInfo.WorldPos3 = meshInfoVo.MeshWordPos3;
                     triangleInfo.Vertices1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
                     triangleInfo.Vertices2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
                     triangleInfo.Vertices3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
@@ -486,11 +492,11 @@ namespace ShadowTest.Custom {
                 }
 
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos1);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices1);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos2);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices2);
                 CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, meshInfoVo.MeshWordPos3);
+                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices3);
 
                 if(NeedLimitRight && triangleInfo.Left > RightLimit ||
                    NeedLimitLeft && triangleInfo.Right < LeftLimit ||
@@ -548,7 +554,8 @@ namespace ShadowTest.Custom {
                 };
 
                 // 当前像素点转化到新坐标系后的坐标
-                var curPoint = math.mul(ShadowMatrix, new float3(curPosX, 0, curPosY));
+                var curPoint = new float3(curPosX, 0, curPosY);
+                var curConvertPoint = math.mul(ShadowMatrix, curPoint);
                 
                 foreach(var triangleInfo in TriangleInfoArray) {
                     if(triangleInfo.Type == TriangleType.Unavailable) {
@@ -562,24 +569,24 @@ namespace ShadowTest.Custom {
                     }
 
                     // 检测是否在三角形内
-                    var tempPoint = curPoint;
-                    if(!IsInsideTriangle(tempPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
+                    if(!IsInsideTriangle(curConvertPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
                         continue;
                     }
 
                     // 如果在三角形内,则计算高度
-                    if(tempPoint.x - triangleInfo.Vertices1.x > 0.001f || tempPoint.z - triangleInfo.Vertices1.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices1.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices1.z;
-                        tempPoint.y = triangleInfo.Vertices1.y;
-                    } else if(tempPoint.x - triangleInfo.Vertices2.x > 0.001f || tempPoint.z - triangleInfo.Vertices2.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices2.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices2.z;
-                        tempPoint.y = triangleInfo.Vertices2.y;
-                    } else if(tempPoint.x - triangleInfo.Vertices3.x > 0.001f || tempPoint.z - triangleInfo.Vertices3.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.Vertices3.x;
-                        tempPoint.z = curPosY - triangleInfo.Vertices3.z;
-                        tempPoint.y = triangleInfo.Vertices3.y;
+                    var tempPoint = curPoint;
+                    if(tempPoint.x - triangleInfo.WorldPos1.x > 0.001f || tempPoint.z - triangleInfo.WorldPos1.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.WorldPos1.x;
+                        tempPoint.z = curPosY - triangleInfo.WorldPos1.z;
+                        tempPoint.y = triangleInfo.WorldPos1.y;
+                    } else if(tempPoint.x - triangleInfo.WorldPos2.x > 0.001f || tempPoint.z - triangleInfo.WorldPos2.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.WorldPos2.x;
+                        tempPoint.z = curPosY - triangleInfo.WorldPos2.z;
+                        tempPoint.y = triangleInfo.WorldPos2.y;
+                    } else if(tempPoint.x - triangleInfo.WorldPos3.x > 0.001f || tempPoint.z - triangleInfo.WorldPos3.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.WorldPos3.x;
+                        tempPoint.z = curPosY - triangleInfo.WorldPos3.z;
+                        tempPoint.y = triangleInfo.WorldPos3.y;
                     }
                     //tempPoint = math.mul(InvShadowMatrix, tempPoint);
                     var tempH = -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
