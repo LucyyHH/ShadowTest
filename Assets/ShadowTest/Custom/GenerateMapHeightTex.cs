@@ -105,18 +105,14 @@ namespace ShadowTest.Custom {
         /// </summary>
         private struct TriangleInfo {
             public TriangleType Type;
-            public float Left;
-            public float Right;
-            public float Bottom;
-            public float Top;
-            public float Back;
-            public float Front;
-            public float3 Vertices1;
-            public float3 Vertices2;
-            public float3 Vertices3;
+            public Boundary Boundary;
+            public Boundary ConvertBoundary;
             public float3 WorldPos1;
             public float3 WorldPos2;
             public float3 WorldPos3;
+            public float3 ConvertWorldPos1;
+            public float3 ConvertWorldPos2;
+            public float3 ConvertWorldPos3;
             /// <summary>
             /// 世界空间下的法线
             /// </summary>
@@ -168,7 +164,7 @@ namespace ShadowTest.Custom {
             public float3 MeshWordPos3;
         }
 
-        private struct MapBoundary {
+        private struct Boundary {
             public float Left;
             public float Right;
             public float Bottom;
@@ -177,8 +173,8 @@ namespace ShadowTest.Custom {
             public float Front;
         }
 
-        private static MapBoundary GetDefaultMapBoundary() {
-            return new MapBoundary
+        private static Boundary GetDefaultMapBoundary() {
+            return new Boundary
             {
                 Left = float.MaxValue,
                 Right = float.MinValue,
@@ -259,11 +255,8 @@ namespace ShadowTest.Custom {
             var usedTriangleInfoList = new NativeList<TriangleInfo>(Allocator);
             foreach(var triangleInfo in triangleInfoArray) {
                 if(triangleInfo.Type == TriangleType.Unavailable) continue;
-
-                CheckBounds(ref mapBoundary.Left, ref mapBoundary.Right, ref mapBoundary.Bottom, ref mapBoundary.Top,
-                    ref mapBoundary.Back, ref mapBoundary.Front, triangleInfo.Left,
-                    triangleInfo.Right, triangleInfo.Bottom, triangleInfo.Top, triangleInfo.Back,
-                    triangleInfo.Front);
+                
+                CheckBounds(ref mapBoundary, triangleInfo.Boundary);
 
                 usedTriangleInfoList.Add(triangleInfo);
             }
@@ -464,15 +457,14 @@ namespace ShadowTest.Custom {
                 var triangleInfo = new TriangleInfo
                 {
                     Type = meshInfoVo.Type,
-                    Left = float.MaxValue,
-                    Right = float.MinValue,
-                    Back = float.MaxValue,
-                    Front = float.MinValue,
-                    Bottom = float.MaxValue,
-                    Top = float.MinValue,
-                    Vertices1 = meshInfoVo.MeshWordPos1,
-                    Vertices2 = meshInfoVo.MeshWordPos2,
-                    Vertices3 = meshInfoVo.MeshWordPos3,
+                    Boundary = GetDefaultMapBoundary(),
+                    ConvertBoundary = GetDefaultMapBoundary(),
+                    WorldPos1 = meshInfoVo.MeshWordPos1,
+                    WorldPos2 = meshInfoVo.MeshWordPos2,
+                    WorldPos3 = meshInfoVo.MeshWordPos3,
+                    ConvertWorldPos1 = meshInfoVo.MeshWordPos1,
+                    ConvertWorldPos2 = meshInfoVo.MeshWordPos2,
+                    ConvertWorldPos3 = meshInfoVo.MeshWordPos3,
                     Normal = math.normalize(math.cross(meshInfoVo.MeshWordPos2 - meshInfoVo.MeshWordPos1,
                         meshInfoVo.MeshWordPos3 - meshInfoVo.MeshWordPos2))
                 };
@@ -481,29 +473,27 @@ namespace ShadowTest.Custom {
                     /*triangleInfo.Vertices1 = math.mul(meshInfoVo.MeshWordPos1, ShadowMatrix);
                     triangleInfo.Vertices2 = math.mul(meshInfoVo.MeshWordPos2, ShadowMatrix);
                     triangleInfo.Vertices3 = math.mul(meshInfoVo.MeshWordPos3, ShadowMatrix);*/
-                    triangleInfo.WorldPos1 = meshInfoVo.MeshWordPos1;
-                    triangleInfo.WorldPos2 = meshInfoVo.MeshWordPos2;
-                    triangleInfo.WorldPos3 = meshInfoVo.MeshWordPos3;
-                    triangleInfo.Vertices1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
-                    triangleInfo.Vertices2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
-                    triangleInfo.Vertices3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
-                    triangleInfo.Normal = math.normalize(math.cross(meshInfoVo.MeshWordPos2 - meshInfoVo.MeshWordPos1,
-                        meshInfoVo.MeshWordPos3 - meshInfoVo.MeshWordPos2));
+                    triangleInfo.ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
+                    triangleInfo.ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
+                    triangleInfo.ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
+                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.WorldPos2 - triangleInfo.WorldPos1,
+                        triangleInfo.WorldPos3 - triangleInfo.WorldPos2));
                 }
 
-                CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices1);
-                CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices2);
-                CheckBounds(ref triangleInfo.Left, ref triangleInfo.Right, ref triangleInfo.Bottom,
-                    ref triangleInfo.Top, ref triangleInfo.Back, ref triangleInfo.Front, triangleInfo.Vertices3);
+                CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos1);
+                CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos2);
+                CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos3);
+                
+                CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos1);
+                CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos2);
+                CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos3);
 
-                if(NeedLimitRight && triangleInfo.Left > RightLimit ||
-                   NeedLimitLeft && triangleInfo.Right < LeftLimit ||
-                   NeedLimitFront && triangleInfo.Back > FrontLimit ||
-                   NeedLimitBack && triangleInfo.Front < BackLimit ||
-                   NeedLimitTop && triangleInfo.Bottom > TopLimit ||
-                   NeedLimitBottom && triangleInfo.Top < BottomLimit) {
+                if(NeedLimitRight && triangleInfo.Boundary.Left > RightLimit ||
+                   NeedLimitLeft && triangleInfo.Boundary.Right < LeftLimit ||
+                   NeedLimitFront && triangleInfo.Boundary.Back > FrontLimit ||
+                   NeedLimitBack && triangleInfo.Boundary.Front < BackLimit ||
+                   NeedLimitTop && triangleInfo.Boundary.Bottom > TopLimit ||
+                   NeedLimitBottom && triangleInfo.Boundary.Top < BottomLimit) {
                     triangleInfo.Type = TriangleType.Unavailable;
                 }
 
@@ -563,13 +553,13 @@ namespace ShadowTest.Custom {
                     }
 
                     // 是否在包围盒里
-                    if(curPosX < triangleInfo.Left || curPosX > triangleInfo.Right ||
-                       curPosY < triangleInfo.Back || curPosY > triangleInfo.Front) {
+                    if(curPosX < triangleInfo.ConvertBoundary.Left || curPosX > triangleInfo.ConvertBoundary.Right ||
+                       curPosY < triangleInfo.ConvertBoundary.Back || curPosY > triangleInfo.ConvertBoundary.Front) {
                         continue;
                     }
 
                     // 检测是否在三角形内
-                    if(!IsInsideTriangle(curConvertPoint, triangleInfo.Vertices1, triangleInfo.Vertices2, triangleInfo.Vertices3)) {
+                    if(!IsInsideTriangle(curConvertPoint, triangleInfo.ConvertWorldPos1, triangleInfo.ConvertWorldPos2, triangleInfo.ConvertWorldPos3)) {
                         continue;
                     }
 
@@ -720,7 +710,17 @@ namespace ShadowTest.Custom {
         }
 
         #endregion
+        
+        private static void CheckBounds(ref Boundary boundary, Boundary checkBoundary) {
+            CheckBounds(ref boundary.Left, ref boundary.Right, ref boundary.Bottom, ref boundary.Top, ref boundary.Back, ref boundary.Front, 
+                checkBoundary.Left, checkBoundary.Right, checkBoundary.Bottom, checkBoundary.Top, checkBoundary.Back, checkBoundary.Front);
+        }
 
+        private static void CheckBounds(ref Boundary boundary, float3 pos) {
+            CheckBounds(ref boundary.Left, ref boundary.Right, ref boundary.Bottom, ref boundary.Top, ref boundary.Back, ref boundary.Front, 
+                pos);
+        }
+        
         private static void CheckBounds(ref float left, ref float right, ref float bottom, ref float top, ref float back,
             ref float front, float3 pos) {
             CheckBounds(ref left, ref right, ref bottom, ref top, ref back, ref front, pos.x, pos.x, pos.y, pos.y, pos.z,
