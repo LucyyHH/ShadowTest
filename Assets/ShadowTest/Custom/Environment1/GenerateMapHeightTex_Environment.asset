@@ -20,7 +20,7 @@ MonoBehaviour:
   resolutionX: 256
   resolutionY: 256
   path: ShadowTest/Custom/Environment1
-  highCuttingLine: 0.5
+  highCuttingLine: 1
   fixedShadowDir: 1
   shadowDir:
     x: -1

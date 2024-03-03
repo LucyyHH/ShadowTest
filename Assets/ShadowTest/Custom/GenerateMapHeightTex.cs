@@ -361,7 +361,7 @@ namespace ShadowTest.Custom {
             for(var y = 0; y < resolutionY; y++) {
                 for(var x = 0; x < resolutionX; x++) {
                     texture2D.SetPixel(x, y,
-                        new Color(curHeightArray1[pixelIndex].Height / maxHeight1, curHeightArray2[pixelIndex].Height / maxHeight2, 
+                        new Color( curHeightArray1[pixelIndex].Height / maxHeight1, curHeightArray2[pixelIndex].Height / maxHeight2, 
                             (curOffsetHeightArray2[pixelIndex] > curOffsetHeightArray1[pixelIndex] ? curOffsetHeightArray2[pixelIndex] : curOffsetHeightArray1[pixelIndex]) / maxOffset));
                     pixelIndex++;
                 }
@@ -582,14 +582,14 @@ namespace ShadowTest.Custom {
                     var tempH = -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
-                    if(tempH < MaxHeight1) {
+                    //if(tempH > MaxHeight1) {
                         if(curHeightArray1.Height < tempH) {
                             curHeightArray1.Height = tempH;
                         }
                         if(!curHeightArray1.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray1.Offset = true;
                         }
-                    } else {
+                    /*} else {
                         tempH -= MaxHeight1;
                         if(curHeightArray2.Height < tempH) {
                             curHeightArray2.Height = tempH;
@@ -597,7 +597,7 @@ namespace ShadowTest.Custom {
                         if(!curHeightArray2.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray2.Offset = true;
                         }
-                    }
+                    }*/
                 }
 
                 CurHeightArray1[index] = curHeightArray1;

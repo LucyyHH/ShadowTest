@@ -136,10 +136,10 @@
 				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
-					/*v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
+					v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
 					                0, -light_dir.y, 0,
-					                0, -light_dir.z, 1), convert_pos);*/
-					v.vertex.xyz = convert_pos;
+					                0, -light_dir.z, 1), convert_pos);
+					//v.vertex.xyz = convert_pos;
 					//v.vertex = mul(light_dir, convert_pos);
 					//height = mul(light_dir, height);
 				#else
@@ -152,6 +152,7 @@
 					const float t = dot(p - orig, n)/dot(d, n);
 					v.vertex.xyz += d * t;
 				#endif
+				
 				
 
 				/*#if !_FIXED_LIGHT_DIR
