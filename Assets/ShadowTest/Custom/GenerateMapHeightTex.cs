@@ -562,22 +562,18 @@ namespace ShadowTest.Custom {
                     }
 
                     // 如果在三角形内,则计算高度
-                    var tempPoint = curConvertPoint;
-                    if(tempPoint.x - triangleInfo.ConvertWorldPos1.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos1.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos1.x;
-                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos1.z;
-                        tempPoint.y = triangleInfo.ConvertWorldPos1.y;
-                    } else if(tempPoint.x - triangleInfo.ConvertWorldPos2.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos2.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos2.x;
-                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos2.z;
-                        tempPoint.y = triangleInfo.ConvertWorldPos2.y;
-                    } else if(tempPoint.x - triangleInfo.ConvertWorldPos3.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos3.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos3.x;
-                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos3.z;
-                        tempPoint.y = triangleInfo.ConvertWorldPos3.y;
+                    float3 tempPoint;
+                    if(curConvertPoint.x - triangleInfo.ConvertWorldPos1.x > 0.001f || curConvertPoint.z - triangleInfo.ConvertWorldPos1.z > 0.001f) {
+                        tempPoint = triangleInfo.ConvertWorldPos1;
+                    } else if(curConvertPoint.x - triangleInfo.ConvertWorldPos2.x > 0.001f || curConvertPoint.z - triangleInfo.ConvertWorldPos2.z > 0.001f) {
+                        tempPoint = triangleInfo.ConvertWorldPos2;
+                    } else if(curConvertPoint.x - triangleInfo.ConvertWorldPos3.x > 0.001f || curConvertPoint.z - triangleInfo.ConvertWorldPos3.z > 0.001f) {
+                        tempPoint = triangleInfo.ConvertWorldPos3;
+                    } else {
+                        tempPoint = curConvertPoint;
                     }
                     //tempPoint = math.mul(InvShadowMatrix, tempPoint);
-                    var tempH = -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
+                    var tempH = -((curConvertPoint.x - tempPoint.x) * triangleInfo.Normal.x + (curConvertPoint.z - tempPoint.z) * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
                     //if(tempH > MaxHeight1) {
