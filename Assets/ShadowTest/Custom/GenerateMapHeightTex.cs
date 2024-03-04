@@ -461,12 +461,7 @@ namespace ShadowTest.Custom {
                     ConvertBoundary = GetDefaultMapBoundary(),
                     WorldPos1 = meshInfoVo.MeshWordPos1,
                     WorldPos2 = meshInfoVo.MeshWordPos2,
-                    WorldPos3 = meshInfoVo.MeshWordPos3,
-                    ConvertWorldPos1 = meshInfoVo.MeshWordPos1,
-                    ConvertWorldPos2 = meshInfoVo.MeshWordPos2,
-                    ConvertWorldPos3 = meshInfoVo.MeshWordPos3,
-                    Normal = math.normalize(math.cross(meshInfoVo.MeshWordPos2 - meshInfoVo.MeshWordPos1,
-                        meshInfoVo.MeshWordPos3 - meshInfoVo.MeshWordPos2))
+                    WorldPos3 = meshInfoVo.MeshWordPos3
                 };
 
                 if(ChangeShadowDir) {
@@ -476,6 +471,9 @@ namespace ShadowTest.Custom {
                     triangleInfo.ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
                     triangleInfo.ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
                     triangleInfo.ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
+                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.ConvertWorldPos2 - triangleInfo.ConvertWorldPos1,
+                        triangleInfo.ConvertWorldPos3 - triangleInfo.ConvertWorldPos2));
+                } else {
                     triangleInfo.Normal = math.normalize(math.cross(triangleInfo.WorldPos2 - triangleInfo.WorldPos1,
                         triangleInfo.WorldPos3 - triangleInfo.WorldPos2));
                 }
@@ -564,19 +562,19 @@ namespace ShadowTest.Custom {
                     }
 
                     // 如果在三角形内,则计算高度
-                    var tempPoint = curPoint;
-                    if(tempPoint.x - triangleInfo.WorldPos1.x > 0.001f || tempPoint.z - triangleInfo.WorldPos1.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.WorldPos1.x;
-                        tempPoint.z = curPosY - triangleInfo.WorldPos1.z;
-                        tempPoint.y = triangleInfo.WorldPos1.y;
-                    } else if(tempPoint.x - triangleInfo.WorldPos2.x > 0.001f || tempPoint.z - triangleInfo.WorldPos2.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.WorldPos2.x;
-                        tempPoint.z = curPosY - triangleInfo.WorldPos2.z;
-                        tempPoint.y = triangleInfo.WorldPos2.y;
-                    } else if(tempPoint.x - triangleInfo.WorldPos3.x > 0.001f || tempPoint.z - triangleInfo.WorldPos3.z > 0.001f) {
-                        tempPoint.x = curPosX - triangleInfo.WorldPos3.x;
-                        tempPoint.z = curPosY - triangleInfo.WorldPos3.z;
-                        tempPoint.y = triangleInfo.WorldPos3.y;
+                    var tempPoint = curConvertPoint;
+                    if(tempPoint.x - triangleInfo.ConvertWorldPos1.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos1.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos1.x;
+                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos1.z;
+                        tempPoint.y = triangleInfo.ConvertWorldPos1.y;
+                    } else if(tempPoint.x - triangleInfo.ConvertWorldPos2.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos2.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos2.x;
+                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos2.z;
+                        tempPoint.y = triangleInfo.ConvertWorldPos2.y;
+                    } else if(tempPoint.x - triangleInfo.ConvertWorldPos3.x > 0.001f || tempPoint.z - triangleInfo.ConvertWorldPos3.z > 0.001f) {
+                        tempPoint.x = curPosX - triangleInfo.ConvertWorldPos3.x;
+                        tempPoint.z = curPosY - triangleInfo.ConvertWorldPos3.z;
+                        tempPoint.y = triangleInfo.ConvertWorldPos3.y;
                     }
                     //tempPoint = math.mul(InvShadowMatrix, tempPoint);
                     var tempH = -(tempPoint.x * triangleInfo.Normal.x + tempPoint.z * triangleInfo.Normal.z) /
