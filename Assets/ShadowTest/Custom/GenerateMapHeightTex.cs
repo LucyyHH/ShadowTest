@@ -217,14 +217,15 @@ namespace ShadowTest.Custom {
                 }
             }
 
-            var shadowDirNormalize = math.normalizesafe(new float3(-shadowDir.x / shadowDir.y, -1 / shadowDir.y, -shadowDir.z / shadowDir.y));
+            var topAxis = -shadowDir;
+            var topAxisNormalize = math.normalizesafe(new float3(-topAxis.x / topAxis.y, -1 / topAxis.y, -topAxis.z / topAxis.y));
             /*var shadowMatrix = fixedShadowDir ? math.orthonormalize(new float3x3(1, 0, 0,
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
                                                         : float3x3.identity;*/
-            var shadowMatrix = fixedShadowDir ? new float3x3(1, shadowDirNormalize.x, 0,
-                    0, shadowDirNormalize.y, 0,
-                    0, shadowDirNormalize.z, 1)
+            var shadowMatrix = fixedShadowDir ? new float3x3(1, topAxisNormalize.x, 0,
+                    0, topAxisNormalize.y, 0,
+                    0, topAxisNormalize.z, 1)
                 : float3x3.identity;
             
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
@@ -256,7 +257,7 @@ namespace ShadowTest.Custom {
             foreach(var triangleInfo in triangleInfoArray) {
                 if(triangleInfo.Type == TriangleType.Unavailable) continue;
                 
-                CheckBounds(ref mapBoundary, triangleInfo.Boundary);
+                CheckBounds(ref mapBoundary, triangleInfo.ConvertBoundary);
 
                 usedTriangleInfoList.Add(triangleInfo);
             }
@@ -293,7 +294,7 @@ namespace ShadowTest.Custom {
             var maxHeight1 = LeftTwoDecimal(high * highCuttingLine);
             var maxHeight2 = high - maxHeight1;
 
-            var normalizeShadowDir = math.normalizesafe(shadowDir);
+            var normalizeShadowDir = math.normalizesafe(-shadowDir);
             var invShadowMatrix = fixedShadowDir ? new float3x3(1, normalizeShadowDir.x, 0,
                     0, normalizeShadowDir.y, 0,
                     0, normalizeShadowDir.z, 1)
