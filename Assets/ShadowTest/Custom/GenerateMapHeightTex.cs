@@ -486,6 +486,7 @@ namespace ShadowTest.Custom {
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos1);
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos2);
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos3);
+                Debug.Log($"{triangleInfo.WorldPos1}_{triangleInfo.ConvertWorldPos1}-{triangleInfo.WorldPos2}_{triangleInfo.ConvertWorldPos2}-{triangleInfo.WorldPos3}_{triangleInfo.ConvertWorldPos3}");
 
                 if(NeedLimitRight && triangleInfo.Boundary.Left > RightLimit ||
                    NeedLimitLeft && triangleInfo.Boundary.Right < LeftLimit ||

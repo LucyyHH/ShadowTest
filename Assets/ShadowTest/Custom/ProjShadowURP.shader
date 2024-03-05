@@ -102,7 +102,7 @@
 				const float height1 = height.r * _MaxHeight1;
 				const float height2 = height.g * _MaxHeight2 + _MaxHeight1;
 				
-				return height.g > 0 && height2 < original_y ? height2 : height1;
+				return /*height.g > 0 && height2 < original_y ? height2 :*/ height1;
 			}
  
 			v2f vert(appdata v)
