@@ -119,8 +119,8 @@
 				float3 convert_pos = v.vertex;
 				half3 light_dir;
 				#if _FIXED_LIGHT_DIR
-					light_dir = normalize(_ShadowDir.xyz);
-					half3 normalize_y = normalize(half3(-_ShadowDir.x / _ShadowDir.y, 1 / _ShadowDir.y, -_ShadowDir.z / _ShadowDir.y));
+					light_dir = normalize(-_ShadowDir.xyz);
+					half3 normalize_y = normalize(half3(-light_dir.x / light_dir.y, 1 / light_dir.y, -light_dir.z / light_dir.y));
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
 									0, 0, 1));*/
@@ -136,9 +136,9 @@
 				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
-					v.vertex.xyz = mul(half3x3(1, -light_dir.x, 0,
-					                0, -light_dir.y, 0,
-					                0, -light_dir.z, 1), convert_pos);
+					v.vertex.xyz = mul(half3x3(1, light_dir.x, 0,
+					                0, light_dir.y, 0,
+					                0, light_dir.z, 1), convert_pos);
 					//v.vertex.xyz = convert_pos;
 					//v.vertex = mul(light_dir, convert_pos);
 					//height = mul(light_dir, height);

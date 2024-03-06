@@ -200,25 +200,26 @@ namespace ShadowTest.Custom {
                 var gameObject = meshFilter.gameObject;
                 var normalLayer = ((1 << gameObject.layer) & normalHeightLayer.value) != 0;
                 var offsetLayer = checkHeightOffsetLayer && ((1 << gameObject.layer) & heightOffsetLayer.value) != 0;
-                if(normalLayer || offsetLayer) {
-                    var sharedMesh = meshFilter.sharedMesh;
+                
+                if(!normalLayer && !offsetLayer) continue;
+                
+                var sharedMesh = meshFilter.sharedMesh;
 
-                    var curType = normalLayer ? TriangleType.Normal : TriangleType.Offset;
+                var curType = normalLayer ? TriangleType.Normal : TriangleType.Offset;
 
-                    for(var i = 0; i < sharedMesh.triangles.Length; i += 3) {
-                        meshInfoVoList.Add(new MeshInfoVo
-                        {
-                            Type = curType,
-                            MeshWordPos1 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]])),
-                            MeshWordPos2 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]])),
-                            MeshWordPos3 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]])),
-                        });
-                    }
+                for(var i = 0; i < sharedMesh.triangles.Length; i += 3) {
+                    meshInfoVoList.Add(new MeshInfoVo
+                    {
+                        Type = curType,
+                        MeshWordPos1 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]])),
+                        MeshWordPos2 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]])),
+                        MeshWordPos3 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]])),
+                    });
                 }
             }
 
             var topAxis = -shadowDir;
-            var topAxisNormalize = math.normalizesafe(new float3(-topAxis.x / topAxis.y, -1 / topAxis.y, -topAxis.z / topAxis.y));
+            var topAxisNormalize = math.normalizesafe(new float3(-topAxis.x / topAxis.y, 1 / topAxis.y, -topAxis.z / topAxis.y));
             /*var shadowMatrix = fixedShadowDir ? math.orthonormalize(new float3x3(1, 0, 0,
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
@@ -486,7 +487,6 @@ namespace ShadowTest.Custom {
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos1);
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos2);
                 CheckBounds(ref triangleInfo.ConvertBoundary, triangleInfo.ConvertWorldPos3);
-                Debug.Log($"{triangleInfo.WorldPos1}_{triangleInfo.ConvertWorldPos1}-{triangleInfo.WorldPos2}_{triangleInfo.ConvertWorldPos2}-{triangleInfo.WorldPos3}_{triangleInfo.ConvertWorldPos3}");
 
                 if(NeedLimitRight && triangleInfo.Boundary.Left > RightLimit ||
                    NeedLimitLeft && triangleInfo.Boundary.Right < LeftLimit ||
@@ -546,7 +546,8 @@ namespace ShadowTest.Custom {
                 // 当前像素点转化到新坐标系后的坐标
                 var curPoint = new float3(curPosX, 0, curPosY);
                 var curConvertPoint = math.mul(ShadowMatrix, curPoint);
-                
+                Debug.Log($"{curPoint}_{curConvertPoint}");
+
                 foreach(var triangleInfo in TriangleInfoArray) {
                     if(triangleInfo.Type == TriangleType.Unavailable) {
                         continue;
