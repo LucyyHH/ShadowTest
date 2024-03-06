@@ -258,7 +258,7 @@ namespace ShadowTest.Custom {
             foreach(var triangleInfo in triangleInfoArray) {
                 if(triangleInfo.Type == TriangleType.Unavailable) continue;
                 
-                CheckBounds(ref mapBoundary, triangleInfo.ConvertBoundary);
+                CheckBounds(ref mapBoundary, triangleInfo.Boundary);
 
                 usedTriangleInfoList.Add(triangleInfo);
             }
@@ -546,7 +546,7 @@ namespace ShadowTest.Custom {
                 // 当前像素点转化到新坐标系后的坐标
                 var curPoint = new float3(curPosX, 0, curPosY);
                 var curConvertPoint = math.mul(ShadowMatrix, curPoint);
-                Debug.Log($"{curPoint}_{curConvertPoint}");
+                //Debug.Log($"{curPoint}_{curConvertPoint}");
 
                 foreach(var triangleInfo in TriangleInfoArray) {
                     if(triangleInfo.Type == TriangleType.Unavailable) {

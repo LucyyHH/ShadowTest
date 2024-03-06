@@ -118,6 +118,7 @@
 				//计算高度
 				float3 convert_pos = v.vertex;
 				half3 light_dir;
+				float2 uv_pos;
 				#if _FIXED_LIGHT_DIR
 					light_dir = normalize(-_ShadowDir.xyz);
 					half3 normalize_y = normalize(half3(-light_dir.x / light_dir.y, 1 / light_dir.y, -light_dir.z / light_dir.y));
@@ -128,11 +129,16 @@
 					                0, normalize_y.y, 0,
 					                0, normalize_y.z, 1), convert_pos);
 									//light_dir = normalize(_MainLightDir.xyz);
+					float3 temp_pos = mul(half3x3(1, light_dir.x, 0,
+					                0, light_dir.y, 0,
+					                0, light_dir.z, 1), float3(convert_pos.x, 0, convert_pos.z));
+					uv_pos = temp_pos.xz;
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
+					uv_pos = convert_pos.xz;
 				#endif
 				
-				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((convert_pos.x - _HeightTexLeft) / _HeightTexLength, (convert_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.y - _HeightTexBack) / _HeightTexWidth), 0);
 				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
