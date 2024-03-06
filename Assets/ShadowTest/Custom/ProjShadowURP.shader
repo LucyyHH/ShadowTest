@@ -131,7 +131,7 @@
 									//light_dir = normalize(_MainLightDir.xyz);
 					float3 temp_pos = mul(half3x3(1, light_dir.x, 0,
 					                0, light_dir.y, 0,
-					                0, light_dir.z, 1), float3(convert_pos.x, 0, convert_pos.z));
+					                0, light_dir.z, 1), float3(convert_pos.x, _HeightTexBottom, convert_pos.z));
 					uv_pos = temp_pos.xz;
 				#else
 					light_dir = normalize(_MainLightDir.xyz);

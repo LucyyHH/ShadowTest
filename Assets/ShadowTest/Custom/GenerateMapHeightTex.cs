@@ -544,7 +544,7 @@ namespace ShadowTest.Custom {
                 };
 
                 // 当前像素点转化到新坐标系后的坐标
-                var curPoint = new float3(curPosX, 0, curPosY);
+                var curPoint = new float3(curPosX, Bottom, curPosY);
                 var curConvertPoint = math.mul(ShadowMatrix, curPoint);
                 //Debug.Log($"{curPoint}_{curConvertPoint}");
 
