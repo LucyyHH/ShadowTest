@@ -102,7 +102,7 @@
 				const float height1 = height.r * _MaxHeight1;
 				const float height2 = height.g * _MaxHeight2 + _MaxHeight1;
 				
-				return /*height.g > 0 && height2 < original_y ? height2 :*/ height1;
+				return height.g > 0 && height2 < original_y ? height2 : height1;
 			}
  
 			v2f vert(appdata v)
@@ -165,13 +165,12 @@
 				v.vertex.y = get_height(height1, v.vertex.y) + _HeightTexBottom;
 				#endif*/
 				
-				//v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
+				v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
 				o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 				// 是否需要显示阴影
-				//o.uv.z = step(0, dot(light_dir, v.vertex - orig));
-				o.uv.z = 1;
+				o.uv.z = step(0, dot(light_dir, orig - v.vertex));
 
 				return o;
 			}

@@ -212,9 +212,9 @@ namespace ShadowTest.Custom {
                     meshInfoVoList.Add(new MeshInfoVo
                     {
                         Type = curType,
-                        MeshWordPos1 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]])),
-                        MeshWordPos2 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]])),
-                        MeshWordPos3 = LeftTwoDecimal(meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]])),
+                        MeshWordPos1 = meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i]]),
+                        MeshWordPos2 = meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 1]]),
+                        MeshWordPos3 = meshFilter.transform.TransformPoint(sharedMesh.vertices[sharedMesh.triangles[i + 2]]),
                     });
                 }
             }
@@ -239,9 +239,9 @@ namespace ShadowTest.Custom {
                 //math.inverse(invShadowMatrix)
                 : float3x3.identity;
             
-            Debug.Log(shadowMatrix);
+            /*Debug.Log(shadowMatrix);
             Debug.Log(invShadowMatrix);
-            Debug.Log(math.mul(invShadowMatrix, shadowMatrix));
+            Debug.Log(math.mul(invShadowMatrix, shadowMatrix));*/
             
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
             var handleMeshVerticesJob = new HandleMeshVerticesJob
@@ -307,7 +307,7 @@ namespace ShadowTest.Custom {
             var stepY = 1.0f / resolutionY * width;
             var texture2D = new Texture2D(resolutionX, resolutionY);
 
-            var maxHeight1 = LeftTwoDecimal(high * highCuttingLine);
+            var maxHeight1 = high * highCuttingLine;
             var maxHeight2 = high - maxHeight1;
 
             var pixelCount = resolutionX * resolutionY;
@@ -325,8 +325,7 @@ namespace ShadowTest.Custom {
                 MaxHeight1 = maxHeight1,
                 CurHeightArray1 = curHeightArray1,
                 CurHeightArray2 = curHeightArray2,
-                ShadowMatrix = shadowMatrix,
-                InvShadowMatrix = invShadowMatrix
+                ShadowMatrix = shadowMatrix
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
             calculateHeightHandle.Complete();
@@ -529,7 +528,6 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float MaxHeight1;
             
             [ReadOnly] public float3x3 ShadowMatrix;
-            [ReadOnly] public float3x3 InvShadowMatrix;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray1;
             public NativeArray<TriangleHeightInfo> CurHeightArray2;
@@ -588,14 +586,14 @@ namespace ShadowTest.Custom {
                     var tempH = -((curConvertPoint.x - tempPoint.x) * triangleInfo.Normal.x + (curConvertPoint.z - tempPoint.z) * triangleInfo.Normal.z) /
                         triangleInfo.Normal.y + tempPoint.y - Bottom;
 
-                    //if(tempH > MaxHeight1) {
+                    if(tempH < MaxHeight1) {
                         if(curHeightArray1.Height < tempH) {
                             curHeightArray1.Height = tempH;
                         }
                         if(!curHeightArray1.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray1.Offset = true;
                         }
-                    /*} else {
+                    } else {
                         tempH -= MaxHeight1;
                         if(curHeightArray2.Height < tempH) {
                             curHeightArray2.Height = tempH;
@@ -603,7 +601,7 @@ namespace ShadowTest.Custom {
                         if(!curHeightArray2.Offset && triangleInfo.Type == TriangleType.Offset) {
                             curHeightArray2.Offset = true;
                         }
-                    }*/
+                    }
                 }
 
                 CurHeightArray1[index] = curHeightArray1;
