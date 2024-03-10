@@ -42,15 +42,15 @@ Material:
     - _FinalHeight2: 2.12
     - _FinalHeight3: 27.79
     - _HeightTexBack: -2
-    - _HeightTexBottom: -0.0070710676
-    - _HeightTexHigh: 4.9568186
+    - _HeightTexBottom: -0.014142135
+    - _HeightTexHigh: 9.913637
     - _HeightTexLeft: -13
     - _HeightTexLength: 34
     - _HeightTexWidth: 32
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.1
-    - _MaxHeight1: 2.48
-    - _MaxHeight2: 2.4768186
+    - _MaxHeight1: 9.92
+    - _MaxHeight2: -0.006362915
     - _MaxOffset: 0.45
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}

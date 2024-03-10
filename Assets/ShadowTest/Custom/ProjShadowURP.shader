@@ -121,13 +121,12 @@
 				float2 uv_pos;
 				#if _FIXED_LIGHT_DIR
 					light_dir = normalize(-_ShadowDir.xyz);
-					half3 normalize_y = normalize(half3(-light_dir.x / light_dir.y, 1 / light_dir.y, -light_dir.z / light_dir.y));
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
 									0, 0, 1));*/
-					convert_pos = mul(half3x3(1, normalize_y.x, 0,
-					                0, normalize_y.y, 0,
-					                0, normalize_y.z, 1), convert_pos);
+					convert_pos = mul(half3x3(1, -light_dir.x / light_dir.y, 0,
+					                0, 1 / light_dir.y, 0,
+					                0, -light_dir.z / light_dir.y, 1), convert_pos);
 									//light_dir = normalize(_MainLightDir.xyz);
 					float3 temp_pos = mul(half3x3(1, light_dir.x, 0,
 					                0, light_dir.y, 0,

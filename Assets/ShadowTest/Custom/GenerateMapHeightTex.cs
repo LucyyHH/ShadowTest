@@ -192,6 +192,7 @@ namespace ShadowTest.Custom {
             var curTime = DateTime.Now;
 
             var mapBoundary = GetDefaultMapBoundary();
+            var convertMapBoundary = GetDefaultMapBoundary();
 
             var meshFilters = mapGo.GetComponentsInChildren<MeshFilter>();
 
@@ -218,16 +219,29 @@ namespace ShadowTest.Custom {
                 }
             }
 
-            var topAxis = -shadowDir;
-            var topAxisNormalize = math.normalizesafe(new float3(-topAxis.x / topAxis.y, 1 / topAxis.y, -topAxis.z / topAxis.y));
+            var yAxis = math.normalizesafe(-shadowDir);
             /*var shadowMatrix = fixedShadowDir ? math.orthonormalize(new float3x3(1, 0, 0,
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
                                                         : float3x3.identity;*/
-            var shadowMatrix = fixedShadowDir ? new float3x3(1, topAxisNormalize.x, 0,
-                    0, topAxisNormalize.y, 0,
-                    0, topAxisNormalize.z, 1)
+            
+            var invShadowMatrix = fixedShadowDir ? 
+                new float3x3(
+                    1, yAxis.x, 0,
+                    0, yAxis.y, 0,
+                    0, yAxis.z, 1)
                 : float3x3.identity;
+            var shadowMatrix = fixedShadowDir ? 
+                new float3x3(
+                    1, -yAxis.x / yAxis.y, 0,
+                    0, 1 / yAxis.y, 0,
+                    0, -yAxis.z / yAxis.y, 1)
+                //math.inverse(invShadowMatrix)
+                : float3x3.identity;
+            
+            Debug.Log(shadowMatrix);
+            Debug.Log(invShadowMatrix);
+            Debug.Log(math.mul(invShadowMatrix, shadowMatrix));
             
             var triangleInfoArray = new NativeArray<TriangleInfo>(meshInfoVoList.Length, Allocator);
             var handleMeshVerticesJob = new HandleMeshVerticesJob
@@ -259,6 +273,7 @@ namespace ShadowTest.Custom {
                 if(triangleInfo.Type == TriangleType.Unavailable) continue;
                 
                 CheckBounds(ref mapBoundary, triangleInfo.Boundary);
+                CheckBounds(ref convertMapBoundary, triangleInfo.ConvertBoundary);
 
                 usedTriangleInfoList.Add(triangleInfo);
             }
@@ -287,19 +302,13 @@ namespace ShadowTest.Custom {
 
             var length = mapBoundary.Right - mapBoundary.Left;
             var width = mapBoundary.Front - mapBoundary.Back;
-            var high = mapBoundary.Top - mapBoundary.Bottom;
+            var high = convertMapBoundary.Top - convertMapBoundary.Bottom;
             var stepX = 1.0f / resolutionX * length;
             var stepY = 1.0f / resolutionY * width;
             var texture2D = new Texture2D(resolutionX, resolutionY);
 
             var maxHeight1 = LeftTwoDecimal(high * highCuttingLine);
             var maxHeight2 = high - maxHeight1;
-
-            var normalizeShadowDir = math.normalizesafe(-shadowDir);
-            var invShadowMatrix = fixedShadowDir ? new float3x3(1, normalizeShadowDir.x, 0,
-                    0, normalizeShadowDir.y, 0,
-                    0, normalizeShadowDir.z, 1)
-                : float3x3.identity;
 
             var pixelCount = resolutionX * resolutionY;
             var curHeightArray1 = new NativeArray<TriangleHeightInfo>(pixelCount, Allocator);
@@ -311,7 +320,7 @@ namespace ShadowTest.Custom {
                 StepX = stepX,
                 StepY = stepY,
                 Left = mapBoundary.Left,
-                Bottom = mapBoundary.Bottom,
+                Bottom = convertMapBoundary.Bottom,
                 Back = mapBoundary.Back,
                 MaxHeight1 = maxHeight1,
                 CurHeightArray1 = curHeightArray1,
@@ -340,7 +349,7 @@ namespace ShadowTest.Custom {
                     HeightOffsetSinMax = heightOffsetSinMax,
                     StepX = stepX,
                     StepY = stepY,
-                    Bottom = mapBoundary.Bottom,
+                    Bottom = convertMapBoundary.Bottom,
                     CurOffsetHeightArray1 = curOffsetHeightArray1,
                     CurOffsetHeightArray2 = curOffsetHeightArray2,
                 };
@@ -410,7 +419,7 @@ namespace ShadowTest.Custom {
             mapMaterial.SetFloat(ShaderHeightTexLength, length);
             mapMaterial.SetFloat(ShaderHeightTexBack, mapBoundary.Back);
             mapMaterial.SetFloat(ShaderHeightTexWidth, width);
-            mapMaterial.SetFloat(ShaderHeightTexBottom, mapBoundary.Bottom);
+            mapMaterial.SetFloat(ShaderHeightTexBottom, convertMapBoundary.Bottom);
             mapMaterial.SetFloat(ShaderHeightTexHigh, high);
             mapMaterial.SetFloat(ShaderMaxHeight1, maxHeight1);
             mapMaterial.SetFloat(ShaderMaxHeight2, maxHeight2);
