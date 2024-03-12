@@ -74,6 +74,7 @@ namespace ShadowTest.Custom {
         private static readonly int ShadowDir = Shader.PropertyToID("_ShadowDir");
 
         private const Allocator Allocator = Unity.Collections.Allocator.TempJob;
+        private const int InnerLoopBatchCount = 64;
 
         /// <summary>
         /// 三角形类型
@@ -197,6 +198,7 @@ namespace ShadowTest.Custom {
                 var normalLayer = ((1 << gameObject.layer) & normalHeightLayer.value) != 0;
                 var offsetLayer = checkHeightOffsetLayer && ((1 << gameObject.layer) & heightOffsetLayer.value) != 0;
                 
+                
                 if(!normalLayer && !offsetLayer) continue;
                 
                 var sharedMesh = meshFilter.sharedMesh;
@@ -258,7 +260,7 @@ namespace ShadowTest.Custom {
                 ChangeShadowDir = fixedShadowDir,
                 ShadowMatrix = shadowMatrix,
             };
-            var meshVerticesHandle = handleMeshVerticesJob.Schedule(meshInfoVoList.Length, 64);
+            var meshVerticesHandle = handleMeshVerticesJob.Schedule(meshInfoVoList.Length, InnerLoopBatchCount);
             meshVerticesHandle.Complete();
             meshInfoVoList.Dispose();
 
@@ -311,12 +313,13 @@ namespace ShadowTest.Custom {
                 StepX = stepX,
                 StepY = stepY,
                 Left = mapBoundary.Left,
-                Bottom = convertMapBoundary.Bottom,
+                Bottom = mapBoundary.Bottom,
                 Back = mapBoundary.Back,
                 CurHeightArray = curHeightArray,
-                ShadowMatrix = shadowMatrix
+                ShadowMatrix = shadowMatrix,
+                InvShadowMatrix = invShadowMatrix
             };
-            var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, 64);
+            var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
             calculateHeightHandle.Complete();
             usedTriangleInfoList.Dispose();
 
@@ -338,7 +341,7 @@ namespace ShadowTest.Custom {
                     Bottom = convertMapBoundary.Bottom,
                     CurOffsetHeightArray = curOffsetHeightArray,
                 };
-                var calculateOffsetHeightHandle = calculateOffsetHeightJob.Schedule(pixelCount, 64);
+                var calculateOffsetHeightHandle = calculateOffsetHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
                 calculateOffsetHeightHandle.Complete();
 
                 foreach(var offset in curOffsetHeightArray) {
@@ -502,6 +505,7 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float Bottom;
             
             [ReadOnly] public float3x3 ShadowMatrix;
+            [ReadOnly] public float3x3 InvShadowMatrix;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray;
 
@@ -522,7 +526,7 @@ namespace ShadowTest.Custom {
                 var curPoint = new float3(curPosX, Bottom, curPosY);
                 var curConvertPoint = math.mul(ShadowMatrix, curPoint);
                 //Debug.Log($"{curPoint}_{curConvertPoint}");
-
+                
                 foreach(var triangleInfo in TriangleInfoArray) {
                     if(triangleInfo.Type == TriangleType.Unavailable) {
                         continue;
@@ -535,7 +539,10 @@ namespace ShadowTest.Custom {
                     }
 
                     // 检测是否在三角形内
-                    if(!IsInsideTriangle(curConvertPoint, triangleInfo.ConvertWorldPos1, triangleInfo.ConvertWorldPos2, triangleInfo.ConvertWorldPos3)) {
+                    if(!IsInsideTriangle(curConvertPoint, 
+                           new float3(triangleInfo.ConvertWorldPos1.x, curConvertPoint.y, triangleInfo.ConvertWorldPos1.z), 
+                           new float3(triangleInfo.ConvertWorldPos2.x, curConvertPoint.y, triangleInfo.ConvertWorldPos2.z), 
+                           new float3(triangleInfo.ConvertWorldPos3.x, curConvertPoint.y, triangleInfo.ConvertWorldPos3.z))) {
                         continue;
                     }
 
@@ -561,7 +568,7 @@ namespace ShadowTest.Custom {
                         curHeightArray.Offset = true;
                     }
                 }
-
+                
                 CurHeightArray[index] = curHeightArray;
             }
         }
@@ -717,9 +724,9 @@ namespace ShadowTest.Custom {
         /// 是否在三角形内
         /// </summary>
         private static bool IsInsideTriangle(float3 point, float3 vertices1, float3 vertices2, float3 vertices3) {
-            var pa = new float3(vertices1.x, 0, vertices1.z) - point;
-            var pb = new float3(vertices2.x, 0, vertices2.z) - point;
-            var pc = new float3(vertices3.x, 0, vertices3.z) - point;
+            var pa = vertices1 - point;
+            var pb = vertices2 - point;
+            var pc = vertices3 - point;
 
             var pab = math.cross(pa, pb);
             var pbc = math.cross(pb, pc);
