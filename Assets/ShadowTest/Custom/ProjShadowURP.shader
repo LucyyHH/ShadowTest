@@ -13,8 +13,6 @@
 		_HeightTexWidth("Height Tex Width", float) = 0
 		_HeightTexBottom("Height Tex Bottom", float) = 0
 		_HeightTexHigh("Height Tex High", float) = 0
-		_MaxHeight1("Max Height 1", float) = 0
-		_MaxHeight2("Max Height 2", float) = 0
 		_MaxOffset("Max Offset", float) = 0
 		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
 		[HideInInspector]_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
@@ -67,8 +65,6 @@
 			float _HeightTexWidth;
 			float _HeightTexBottom;
 			float _HeightTexHigh;
-			float _MaxHeight1;
-			float _MaxHeight2;
 			float _MaxOffset;
 			float4 _MainLightDir;
 			float4 _ShadowDir;
@@ -96,14 +92,6 @@
 				float3 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
-
-			float get_height(half2 height, const float original_y)
-			{
-				const float height1 = height.r * _MaxHeight1;
-				const float height2 = height.g * _MaxHeight2 + _MaxHeight1;
-				
-				return height.g > 0 && height2 < original_y ? height2 : height1;
-			}
  
 			v2f vert(appdata v)
 			{
@@ -117,20 +105,20 @@
 				const half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
 				float3 convert_pos = v.vertex;
-				half3 light_dir;
+				half3 y_axis;
 				float2 uv_pos;
 				#if _FIXED_LIGHT_DIR
-					light_dir = normalize(-_ShadowDir.xyz);
+					y_axis = normalize(-_ShadowDir.xyz);
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
 									0, 0, 1));*/
-					convert_pos = mul(half3x3(1, -light_dir.x / light_dir.y, 0,
-					                0, 1 / light_dir.y, 0,
-					                0, -light_dir.z / light_dir.y, 1), convert_pos);
+					convert_pos = mul(half3x3(1, -y_axis.x / y_axis.y, 0,
+					                0, 1 / y_axis.y, 0,
+					                0, -y_axis.z / y_axis.y, 1), convert_pos);
 									//light_dir = normalize(_MainLightDir.xyz);
-					float3 temp_pos = mul(half3x3(1, light_dir.x, 0,
-					                0, light_dir.y, 0,
-					                0, light_dir.z, 1), float3(convert_pos.x, _HeightTexBottom, convert_pos.z));
+					float3 temp_pos = mul(half3x3(1, y_axis.x, 0,
+					                0, y_axis.y, 0,
+					                0, y_axis.z, 1), float3(convert_pos.x, _HeightTexBottom, convert_pos.z));
 					uv_pos = temp_pos.xz;
 				#else
 					light_dir = normalize(_MainLightDir.xyz);
@@ -138,12 +126,12 @@
 				#endif
 				
 				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.y - _HeightTexBack) / _HeightTexWidth), 0);
-				convert_pos.y = get_height(height.rg, convert_pos.y) + _HeightTexBottom;
+				convert_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
 
 				#if _FIXED_LIGHT_DIR
-					v.vertex.xyz = mul(half3x3(1, light_dir.x, 0,
-					                0, light_dir.y, 0,
-					                0, light_dir.z, 1), convert_pos);
+					v.vertex.xyz = mul(half3x3(1, y_axis.x, 0,
+					                0, y_axis.y, 0,
+					                0, y_axis.z, 1), convert_pos);
 					//v.vertex.xyz = convert_pos;
 					//v.vertex = mul(light_dir, convert_pos);
 					//height = mul(light_dir, height);
@@ -165,12 +153,14 @@
 				v.vertex.y = get_height(height1, v.vertex.y) + _HeightTexBottom;
 				#endif*/
 				
-				v.vertex.xyz += (height.b * _MaxOffset + _LandHeightOffset) * view;
+				//v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * /*y_axis*/view;
+
+				// 是否需要显示阴影
+				//o.uv.z = step(0, dot(y_axis, orig - v.vertex));
+				o.uv.z = 1;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
 				o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
-				// 是否需要显示阴影
-				o.uv.z = step(0, dot(light_dir, orig - v.vertex));
 
 				return o;
 			}
