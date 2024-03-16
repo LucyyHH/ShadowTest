@@ -17,14 +17,14 @@ MonoBehaviour:
   normalHeightLayer:
     serializedVersion: 2
     m_Bits: 8
-  resolutionX: 512
-  resolutionY: 512
+  resolutionX: 256
+  resolutionY: 256
   path: ShadowTest/Custom/Environment
   fixedShadowDir: 1
   shadowDir:
     x: -1
     y: -1
-    z: 0
+    z: -1
   needLimitLeft: 1
   leftLimit: -23
   needLimitRight: 1

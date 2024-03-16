@@ -42,8 +42,8 @@ Material:
     - _FinalHeight2: 2.12
     - _FinalHeight3: 27.79
     - _HeightTexBack: -12
-    - _HeightTexBottom: -0.025455842
-    - _HeightTexHigh: 9.916441
+    - _HeightTexBottom: -0.031176915
+    - _HeightTexHigh: 12.145111
     - _HeightTexLeft: -23
     - _HeightTexLength: 54
     - _HeightTexWidth: 52
@@ -54,5 +54,5 @@ Material:
     - _MaxOffset: 0.09
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
-    - _ShadowDir: {r: -1, g: -1, b: 0, a: 0}
+    - _ShadowDir: {r: -1, g: -1, b: -1, a: 0}
   m_BuildTextureStacks: []

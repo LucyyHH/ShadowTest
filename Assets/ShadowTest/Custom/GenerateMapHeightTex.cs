@@ -355,7 +355,7 @@ namespace ShadowTest.Custom {
             for(var y = 0; y < resolutionY; y++) {
                 for(var x = 0; x < resolutionX; x++) {
                     texture2D.SetPixel(x, y,
-                        new Color( curHeightArray[pixelIndex].Height / high, curOffsetHeightArray[pixelIndex] / maxOffset, 0f));
+                        new Color( curHeightArray[pixelIndex].Height / high, /*curOffsetHeightArray[pixelIndex] / maxOffset*/0f, 0f));
                     pixelIndex++;
                 }
             }
@@ -545,6 +545,22 @@ namespace ShadowTest.Custom {
                            new float3(triangleInfo.ConvertWorldPos3.x, curConvertPoint.y, triangleInfo.ConvertWorldPos3.z))) {
                         continue;
                     }
+                    
+                    /*// 检测是否在三角形内
+                    if(!IsInsideTriangle(new float2(curConvertPoint.x, curConvertPoint.z),
+                           new float2(triangleInfo.ConvertWorldPos1.x, triangleInfo.ConvertWorldPos1.z),
+                           new float2(triangleInfo.ConvertWorldPos2.x, triangleInfo.ConvertWorldPos2.z),
+                           new float2(triangleInfo.ConvertWorldPos3.x, triangleInfo.ConvertWorldPos3.z))) {
+                        continue;
+                    }*/
+                    
+                    /*// 检测是否在三角形内
+                    if(!IsInTriangle(math.normalizesafe(new float2(curConvertPoint.x, curConvertPoint.z)),
+                           math.normalizesafe(new float2(triangleInfo.ConvertWorldPos1.x, triangleInfo.ConvertWorldPos1.z)),
+                           math.normalizesafe(new float2(triangleInfo.ConvertWorldPos2.x, triangleInfo.ConvertWorldPos2.z)),
+                               math.normalizesafe(new float2(triangleInfo.ConvertWorldPos3.x, triangleInfo.ConvertWorldPos3.z)))) {
+                        continue;
+                    }*/
 
                     // 如果在三角形内,则计算高度
                     float3 tempPoint;
@@ -724,19 +740,59 @@ namespace ShadowTest.Custom {
         /// 是否在三角形内
         /// </summary>
         private static bool IsInsideTriangle(float3 point, float3 vertices1, float3 vertices2, float3 vertices3) {
-            var pa = vertices1 - point;
-            var pb = vertices2 - point;
-            var pc = vertices3 - point;
+            var v12 = vertices2 - vertices1;
+            var v23 = vertices3 - vertices2;
+            var v31 = vertices1 - vertices3;
+            var v13 = vertices3 - vertices1;
+            
+            var normal = math.normalizesafe(math.cross(v12, v13));
 
-            var pab = math.cross(pa, pb);
-            var pbc = math.cross(pb, pc);
-            var pca = math.cross(pc, pa);
+            double dot12 = math.dot(v12, normal);
+            double dot23 = math.dot(v23, normal);
+            double dot31 = math.dot(v31, normal);
 
-            var d1 = math.dot(pab, pbc);
-            var d2 = math.dot(pab, pca);
-            var d3 = math.dot(pbc, pca);
+            return (dot12 >= 0 && dot23 >= 0 && dot31 >= 0) || (dot12 <= 0 && dot23 <= 0 && dot31 <= 0);
+        }
+        
+        /// <summary>
+        /// 是否在三角形内
+        /// </summary>
+        private static bool IsInsideTriangle(float2 p, float2 a, float2 b, float2 c) {
+            
+            double areaAbc = Math.Abs(CrossProduct(a, b) + CrossProduct(b, c) + CrossProduct(c, a)) / 2;
+            double areaPbc = Math.Abs(CrossProduct(p, b) + CrossProduct(b, c) + CrossProduct(c, p)) / 2;
+            double areaPca = Math.Abs(CrossProduct(a, p) + CrossProduct(p, c) + CrossProduct(c, a)) / 2;
+            double areaPab = Math.Abs(CrossProduct(a, p) + CrossProduct(p, b) + CrossProduct(b, a)) / 2;
 
-            return d1 >= 0 && d2 >= 0 && d3 >= 0;
+            return Math.Abs(areaAbc - (areaPbc + areaPca + areaPab)) < 0.5; // Tolerance for floating point comparisons
+        }
+        
+        private static float CrossProduct(float2 p1, float2 p2)
+        {
+            return p1.x * p2.y - p2.x * p1.y;
+        }
+        
+        private static float Product(float2 p1, float2 p2, float2 p3) {
+            //首先根据坐标计算p1p2和p1p3的向量，然后再计算叉乘
+            //p1p2 向量表示为 (p2.x-p1.x,p2.y-p1.y)
+            //p1p3 向量表示为 (p3.x-p1.x,p3.y-p1.y)
+            return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+        }
+
+        private static bool IsInTriangle(float2 o, float2 p1, float2 p2, float2 p3) {
+            while(true) {
+                //保证p1，p2，p3是逆时针顺序
+                if(!(Product(p1, p2, p3) < 0)) {
+                    var product1 = Product(p1, p2, o);
+                    var product2 = Product(p2, p3, o);
+                    var product3 = Product(p3, p1, o);
+                    /*if(product1 < 0 && product1 > -0.01 || product2 < 0 && product2 > -0.01 || product3 < 0 && product3 > -0.01) {
+                        Debug.Log($"{o}_{p1}_{p2}_{p3}:每次的结果：{product1}_{product2}_{product3}");
+                    }*/
+                    return product1 > -0.01 && product2 > -0.01 && product3 > -0.01;
+                }
+                (p2, p3) = (p3, p2);
+            }
         }
     }
 }

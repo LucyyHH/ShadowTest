@@ -17,8 +17,8 @@ MonoBehaviour:
   normalHeightLayer:
     serializedVersion: 2
     m_Bits: 8
-  resolutionX: 256
-  resolutionY: 256
+  resolutionX: 1024
+  resolutionY: 1024
   path: ShadowTest/Custom/Environment1
   fixedShadowDir: 1
   shadowDir:
