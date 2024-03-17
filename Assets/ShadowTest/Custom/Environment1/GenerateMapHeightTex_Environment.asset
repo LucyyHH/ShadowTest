@@ -22,9 +22,9 @@ MonoBehaviour:
   path: ShadowTest/Custom/Environment1
   fixedShadowDir: 1
   shadowDir:
-    x: 0
+    x: -1
     y: -1
-    z: 0
+    z: -1
   needLimitLeft: 1
   leftLimit: -13
   needLimitRight: 1

@@ -28,6 +28,8 @@ namespace ShadowTest.Custom.Editor {
                     curNeedShow = !ReferenceEquals(_generateMapHeightTex.mapGo, null);
                 } else if(iterator.name == "fixedShadowDir") {
                     curNeedShow = _generateMapHeightTex.fixedShadowDir;
+                } else if(iterator.name == "fixedShadowDir") {
+                    curNeedShow = _generateMapHeightTex.fixedShadowDir;
                 } else if(iterator.name == "needLimitLeft") {
                     curNeedShow = _generateMapHeightTex.needLimitLeft;
                 } else if(iterator.name == "needLimitRight") {

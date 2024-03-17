@@ -41,12 +41,12 @@ Material:
     - _FinalHeight1: 2.12
     - _FinalHeight2: 2.12
     - _FinalHeight3: 27.79
-    - _HeightTexBack: -1.8118055
-    - _HeightTexBottom: -0.013000011
-    - _HeightTexHigh: 7.006983
+    - _HeightTexBack: -1.5140085
+    - _HeightTexBottom: 0.0008592523
+    - _HeightTexHigh: 6.939558
     - _HeightTexLeft: -11.731009
-    - _HeightTexLength: 32.73101
-    - _HeightTexWidth: 30.297813
+    - _HeightTexLength: 32.000015
+    - _HeightTexWidth: 30.000015
     - _LandHeight: 0.05
     - _LandHeightOffset: 0.02
     - _MaxHeight1: 7.77
@@ -54,5 +54,5 @@ Material:
     - _MaxOffset: 0.45
     m_Colors:
     - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
-    - _ShadowDir: {r: 0, g: -1, b: 0, a: 0}
+    - _ShadowDir: {r: -1, g: -1, b: -1, a: 0}
   m_BuildTextureStacks: []

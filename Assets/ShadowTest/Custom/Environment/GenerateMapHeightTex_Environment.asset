@@ -20,6 +20,7 @@ MonoBehaviour:
   resolutionX: 256
   resolutionY: 256
   path: ShadowTest/Custom/Environment
+  checkInInsideTriangleTolerance: 0.06
   fixedShadowDir: 1
   shadowDir:
     x: -1

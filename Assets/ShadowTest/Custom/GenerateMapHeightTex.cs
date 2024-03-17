@@ -25,6 +25,9 @@ namespace ShadowTest.Custom {
         [Header("保存路径(从'Assets/'开始)")]
         public string path;
         
+        [Header("检查点是否在三角形中的容差(出现裂缝是可以适当增大)")] 
+        public float checkInInsideTriangleTolerance = 0.001f;
+        
         [Header("固定影子(灯光)方向")]
         public bool fixedShadowDir;
         public float3 shadowDir = Vector3.down;
@@ -315,9 +318,11 @@ namespace ShadowTest.Custom {
                 Left = mapBoundary.Left,
                 Bottom = mapBoundary.Bottom,
                 Back = mapBoundary.Back,
+                ConvertBottom = convertMapBoundary.Bottom,
                 CurHeightArray = curHeightArray,
                 ShadowMatrix = shadowMatrix,
-                InvShadowMatrix = invShadowMatrix
+                InvShadowMatrix = invShadowMatrix,
+                CheckInInsideTriangleTolerance = checkInInsideTriangleTolerance
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
             calculateHeightHandle.Complete();
@@ -338,7 +343,7 @@ namespace ShadowTest.Custom {
                     HeightOffsetSinMax = heightOffsetSinMax,
                     StepX = stepX,
                     StepY = stepY,
-                    Bottom = convertMapBoundary.Bottom,
+                    ConvertBottom = convertMapBoundary.Bottom,
                     CurOffsetHeightArray = curOffsetHeightArray,
                 };
                 var calculateOffsetHeightHandle = calculateOffsetHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
@@ -453,19 +458,11 @@ namespace ShadowTest.Custom {
                     WorldPos3 = meshInfoVo.MeshWordPos3
                 };
 
-                if(ChangeShadowDir) {
-                    /*triangleInfo.Vertices1 = math.mul(meshInfoVo.MeshWordPos1, ShadowMatrix);
-                    triangleInfo.Vertices2 = math.mul(meshInfoVo.MeshWordPos2, ShadowMatrix);
-                    triangleInfo.Vertices3 = math.mul(meshInfoVo.MeshWordPos3, ShadowMatrix);*/
-                    triangleInfo.ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
-                    triangleInfo.ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
-                    triangleInfo.ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
-                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.ConvertWorldPos2 - triangleInfo.ConvertWorldPos1,
-                        triangleInfo.ConvertWorldPos3 - triangleInfo.ConvertWorldPos2));
-                } else {
-                    triangleInfo.Normal = math.normalize(math.cross(triangleInfo.WorldPos2 - triangleInfo.WorldPos1,
-                        triangleInfo.WorldPos3 - triangleInfo.WorldPos2));
-                }
+                triangleInfo.ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
+                triangleInfo.ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
+                triangleInfo.ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
+                triangleInfo.Normal = math.normalizesafe(math.cross(triangleInfo.ConvertWorldPos2 - triangleInfo.ConvertWorldPos1,
+                    triangleInfo.ConvertWorldPos3 - triangleInfo.ConvertWorldPos2));
 
                 CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos1);
                 CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos2);
@@ -503,9 +500,12 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float Left;
             [ReadOnly] public float Back;
             [ReadOnly] public float Bottom;
+            [ReadOnly] public float ConvertBottom;
             
             [ReadOnly] public float3x3 ShadowMatrix;
             [ReadOnly] public float3x3 InvShadowMatrix;
+
+            [ReadOnly] public float CheckInInsideTriangleTolerance;
 
             public NativeArray<TriangleHeightInfo> CurHeightArray;
 
@@ -539,12 +539,21 @@ namespace ShadowTest.Custom {
                     }
 
                     // 检测是否在三角形内
+                    if(!IsInsideTriangleMy(curConvertPoint,
+                           new float3(triangleInfo.ConvertWorldPos1.x, curConvertPoint.y, triangleInfo.ConvertWorldPos1.z),
+                           new float3(triangleInfo.ConvertWorldPos2.x, curConvertPoint.y, triangleInfo.ConvertWorldPos2.z),
+                           new float3(triangleInfo.ConvertWorldPos3.x, curConvertPoint.y, triangleInfo.ConvertWorldPos3.z),
+                           CheckInInsideTriangleTolerance)) {
+                        continue;
+                    }
+                    
+                    /*// 检测是否在三角形内
                     if(!IsInsideTriangle(curConvertPoint, 
                            new float3(triangleInfo.ConvertWorldPos1.x, curConvertPoint.y, triangleInfo.ConvertWorldPos1.z), 
                            new float3(triangleInfo.ConvertWorldPos2.x, curConvertPoint.y, triangleInfo.ConvertWorldPos2.z), 
                            new float3(triangleInfo.ConvertWorldPos3.x, curConvertPoint.y, triangleInfo.ConvertWorldPos3.z))) {
                         continue;
-                    }
+                    }*/
                     
                     /*// 检测是否在三角形内
                     if(!IsInsideTriangle(new float2(curConvertPoint.x, curConvertPoint.z),
@@ -575,7 +584,7 @@ namespace ShadowTest.Custom {
                     }
                     //tempPoint = math.mul(InvShadowMatrix, tempPoint);
                     var tempH = -((curConvertPoint.x - tempPoint.x) * triangleInfo.Normal.x + (curConvertPoint.z - tempPoint.z) * triangleInfo.Normal.z) /
-                        triangleInfo.Normal.y + tempPoint.y - Bottom;
+                        triangleInfo.Normal.y + tempPoint.y - ConvertBottom;
 
                     if(curHeightArray.Height < tempH) {
                         curHeightArray.Height = tempH;
@@ -608,7 +617,7 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float StepX;
             [ReadOnly] public float StepY;
 
-            [ReadOnly] public float Bottom;
+            [ReadOnly] public float ConvertBottom;
 
             public NativeArray<float> CurOffsetHeightArray;
 
@@ -617,7 +626,7 @@ namespace ShadowTest.Custom {
                 var xIndex = index % ResolutionX;
                 var yIndex = index / ResolutionX;
 
-                CurOffsetHeightArray[index] = CalculateCurOffset(index, xIndex, yIndex, CurHeightArray, StepX, StepY, Bottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
+                CurOffsetHeightArray[index] = CalculateCurOffset(index, xIndex, yIndex, CurHeightArray, StepX, StepY, ConvertBottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
             }
         }
 
@@ -735,12 +744,31 @@ namespace ShadowTest.Custom {
                 front = checkFront;
             }
         }
+        
+        /// <summary>
+        /// 是否在三角形内
+        /// </summary>
+        private static bool IsInsideTriangleMy(float3 point, float3 vertices1, float3 vertices2, float3 vertices3, float tolerance = 0.001f) {
+            var pa = vertices1 - point;
+            var pb = vertices2 - point;
+            var pc = vertices3 - point;
+
+            var pab = math.cross(pa, pb);
+            var pbc = math.cross(pb, pc);
+            var pca = math.cross(pc, pa);
+
+            var d1 = math.dot(pab, pbc);
+            var d2 = math.dot(pab, pca);
+            var d3 = math.dot(pbc, pca);
+
+            return d1 >= -tolerance && d2 >= -tolerance && d3 >= -tolerance;
+        }
 
         /// <summary>
         /// 是否在三角形内
         /// </summary>
         private static bool IsInsideTriangle(float3 point, float3 vertices1, float3 vertices2, float3 vertices3) {
-            var v12 = vertices2 - vertices1;
+            /*var v12 = vertices2 - vertices1;
             var v23 = vertices3 - vertices2;
             var v31 = vertices1 - vertices3;
             var v13 = vertices3 - vertices1;
@@ -751,7 +779,26 @@ namespace ShadowTest.Custom {
             double dot23 = math.dot(v23, normal);
             double dot31 = math.dot(v31, normal);
 
-            return (dot12 >= 0 && dot23 >= 0 && dot31 >= 0) || (dot12 <= 0 && dot23 <= 0 && dot31 <= 0);
+            return (dot12 >= 0 && dot23 >= 0 && dot31 >= 0) || (dot12 <= 0 && dot23 <= 0 && dot31 <= 0);*/
+            return SameSide(vertices1, vertices2, vertices3, point) &&
+                   SameSide(vertices2, vertices3, vertices1, point) &&
+                   SameSide(vertices3, vertices1, vertices2, point);
+        }
+        
+        // Determine whether two vectors v1 and v2 point to the same direction
+        // v1 = Cross(AB, AC)
+        // v2 = Cross(AB, AP)
+        private static bool SameSide(float3 A, float3 B, float3 C, float3 P)
+        {
+            float3 AB = B - A ;
+            float3 AC = C - A ;
+            float3 AP = P - A ;
+
+            float3 v1 = math.normalizesafe(math.cross(AB, AC));
+            float3 v2 = math.normalizesafe(math.cross(AB, AP));
+
+            // v1 and v2 should point to the same direction
+            return math.dot(v1, v2) >= 0;
         }
         
         /// <summary>
@@ -789,7 +836,7 @@ namespace ShadowTest.Custom {
                     /*if(product1 < 0 && product1 > -0.01 || product2 < 0 && product2 > -0.01 || product3 < 0 && product3 > -0.01) {
                         Debug.Log($"{o}_{p1}_{p2}_{p3}:每次的结果：{product1}_{product2}_{product3}");
                     }*/
-                    return product1 > -0.01 && product2 > -0.01 && product3 > -0.01;
+                    return product1 >= -0.001 && product2 >= -0.001 && product3 >= -0.001;
                 }
                 (p2, p3) = (p3, p2);
             }
