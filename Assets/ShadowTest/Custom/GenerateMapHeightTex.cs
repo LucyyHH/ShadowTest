@@ -28,6 +28,9 @@ namespace ShadowTest.Custom {
         [Header("检查点是否在三角形中的容差(出现裂缝是可以适当增大)")] 
         public float checkInInsideTriangleTolerance = 0.001f;
         
+        [Header("两个相邻像素高度差值超过当前值，则当前像素不显示影子")] 
+        public float heightCheckHideDiff = 3f;
+        
         [Header("固定影子(灯光)方向")]
         public bool fixedShadowDir;
         public float3 shadowDir = Vector3.down;
@@ -329,6 +332,7 @@ namespace ShadowTest.Custom {
             usedTriangleInfoList.Dispose();
 
             var curOffsetHeightArray = new NativeArray<float>(pixelCount, Allocator);
+            var curHideHeightArray = new NativeArray<float>(pixelCount, Allocator);
             var maxOffset = 0f;
             if(needHeightOffset) {
                 var calculateOffsetHeightJob = new CalculateOffsetHeightJob
@@ -344,7 +348,9 @@ namespace ShadowTest.Custom {
                     StepX = stepX,
                     StepY = stepY,
                     ConvertBottom = convertMapBoundary.Bottom,
+                    HeightCheckHideDiff = heightCheckHideDiff,
                     CurOffsetHeightArray = curOffsetHeightArray,
+                    CurHideHeightArray = curHideHeightArray,
                 };
                 var calculateOffsetHeightHandle = calculateOffsetHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
                 calculateOffsetHeightHandle.Complete();
@@ -360,13 +366,14 @@ namespace ShadowTest.Custom {
             for(var y = 0; y < resolutionY; y++) {
                 for(var x = 0; x < resolutionX; x++) {
                     texture2D.SetPixel(x, y,
-                        new Color( curHeightArray[pixelIndex].Height / high, /*curOffsetHeightArray[pixelIndex] / maxOffset*/0f, 0f));
+                        new Color( curHeightArray[pixelIndex].Height / high, curOffsetHeightArray[pixelIndex] / maxOffset/*0f*/, curHideHeightArray[pixelIndex]));
                     pixelIndex++;
                 }
             }
 
             curHeightArray.Dispose();
             curOffsetHeightArray.Dispose();
+            curHideHeightArray.Dispose();
 
             var costTime = DateTime.Now.Subtract(curTime).TotalMilliseconds / 1000d;
 
@@ -618,15 +625,19 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float StepY;
 
             [ReadOnly] public float ConvertBottom;
+            
+            [ReadOnly] public float HeightCheckHideDiff;
 
             public NativeArray<float> CurOffsetHeightArray;
+            public NativeArray<float> CurHideHeightArray;
 
             // Each Execute call processes only an individual index.
             public void Execute(int index) {
                 var xIndex = index % ResolutionX;
                 var yIndex = index / ResolutionX;
 
-                CurOffsetHeightArray[index] = CalculateCurOffset(index, xIndex, yIndex, CurHeightArray, StepX, StepY, ConvertBottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
+                CurOffsetHeightArray[index] = CalculateCurHeightOffset(index, xIndex, yIndex, CurHeightArray, StepX, StepY, ConvertBottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
+                CurHideHeightArray[index] = CalculateCurHeightHide(index, xIndex, yIndex, HeightCheckHideDiff, CurHeightArray, ConvertBottom, ResolutionX, ResolutionY);
             }
         }
 
@@ -649,7 +660,7 @@ namespace ShadowTest.Custom {
         /// <summary>
         /// 计算高度偏移
         /// </summary>
-        private static float CalculateCurOffset(int index, int xIndex, int yIndex, NativeArray<TriangleHeightInfo> curHeightArray, float stepX, float stepY, float bottom, int resolutionX, int resolutionY, int checkLength, bool checkHeightOffsetLayer, float heightOffsetSinMin, float heightOffsetSinMax, float heightOffset) {
+        private static float CalculateCurHeightOffset(int index, int xIndex, int yIndex, NativeArray<TriangleHeightInfo> curHeightArray, float stepX, float stepY, float bottom, int resolutionX, int resolutionY, int checkLength, bool checkHeightOffsetLayer, float heightOffsetSinMin, float heightOffsetSinMax, float heightOffset) {
             var curSin = 0f;
             var triangleHeightInfo = curHeightArray[index];
             var curH = triangleHeightInfo.Height;
@@ -676,10 +687,28 @@ namespace ShadowTest.Custom {
                     }
                 }
 
-                return math.round(curSin * heightOffset * 100) / 100f;
+                return curSin * heightOffset;
             } else {
                 return 0;
             }
+        }
+        
+        /// <summary>
+        /// 计算高度偏移
+        /// </summary>
+        private static float CalculateCurHeightHide(int index, int xIndex, int yIndex, float checkHideDiff, NativeArray<TriangleHeightInfo> curHeightArray, float bottom, int resolutionX, int resolutionY) {
+            var triangleHeightInfo = curHeightArray[index];
+            var curH = triangleHeightInfo.Height;
+            if(curH > bottom) {
+                if(xIndex - 1 >= 0 && math.abs(curH - curHeightArray[index - 1].Height) > checkHideDiff 
+                   || xIndex + 1 < resolutionX && math.abs(curH - curHeightArray[index + 1].Height) > checkHideDiff
+                   || yIndex - 1 >= 0 && math.abs(curH - curHeightArray[index - 1 * resolutionX].Height) > checkHideDiff
+                   || yIndex + 1 < resolutionY && math.abs(curH - curHeightArray[index + 1 * resolutionX].Height) > checkHideDiff) {
+                    return 0;
+                }
+            } 
+            
+            return 1;
         }
 
         /// <summary>

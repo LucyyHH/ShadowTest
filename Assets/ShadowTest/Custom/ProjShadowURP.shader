@@ -153,11 +153,11 @@
 				v.vertex.y = get_height(height1, v.vertex.y) + _HeightTexBottom;
 				#endif*/
 				
-				//v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * /*y_axis*/view;
+				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
 				// 是否需要显示阴影
-				//o.uv.z = step(0, dot(y_axis, orig - v.vertex));
-				o.uv.z = 1;
+				o.uv.z = step(0, dot(y_axis, orig - v.vertex)) * height.b;
+				//o.uv.z = 1;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
 				o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
