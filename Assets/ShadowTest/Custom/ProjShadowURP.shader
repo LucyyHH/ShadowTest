@@ -102,56 +102,47 @@
 				v.vertex = mul(unity_ObjectToWorld, v.vertex);
 				//源点
 				const float3 orig = v.vertex;
-				const half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
+				//const half3 view = normalize(_WorldSpaceCameraPos.xyz - v.vertex);
 				//计算高度
-				float3 convert_pos = v.vertex;
+				float3 target_pos = v.vertex;
 				half3 y_axis;
-				float2 uv_pos;
+				half3 height;
 				#if _FIXED_LIGHT_DIR
 					y_axis = normalize(-_ShadowDir.xyz);
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
 									0, 0, 1));*/
-					convert_pos = mul(half3x3(1, -y_axis.x / y_axis.y, 0,
+					target_pos = mul(half3x3(1, -y_axis.x / y_axis.y, 0,
 					                0, 1 / y_axis.y, 0,
-					                0, -y_axis.z / y_axis.y, 1), convert_pos);
+					                0, -y_axis.z / y_axis.y, 1), target_pos);
 									//light_dir = normalize(_MainLightDir.xyz);
-					float3 temp_pos = mul(half3x3(1, y_axis.x, 0,
+					float3 uv_pos = mul(half3x3(1, y_axis.x, 0,
 					                0, y_axis.y, 0,
 					                0, y_axis.z, 1), float3(convert_pos.x, _HeightTexBottom, convert_pos.z));
-					uv_pos = temp_pos.xz;
-				#else
-					light_dir = normalize(_MainLightDir.xyz);
-					uv_pos = convert_pos.xz;
-				#endif
-				
-				half3 height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.y - _HeightTexBack) / _HeightTexWidth), 0);
-				convert_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
 
-				#if _FIXED_LIGHT_DIR
+					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((target_pos.x - _HeightTexLeft) / _HeightTexLength, (target_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+					convert_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
+
 					v.vertex.xyz = mul(half3x3(1, y_axis.x, 0,
 					                0, y_axis.y, 0,
 					                0, y_axis.z, 1), convert_pos);
-					//v.vertex.xyz = convert_pos;
-					//v.vertex = mul(light_dir, convert_pos);
-					//height = mul(light_dir, height);
 				#else
-					//面上的点
-					const float3 p = convert_pos;
-					//面的法线
-					const float3 n = float3(0, -1, 0);
-					//光的方向
-					const float3 d = light_dir;
-					const float t = dot(p - orig, n)/dot(d, n);
-					v.vertex.xyz += d * t;
-				#endif
-				
-				
+					y_axis = normalize(-_MainLightDir.xyz);
 
-				/*#if !_FIXED_LIGHT_DIR
-				const half3 height1 = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
-				v.vertex.y = get_height(height1, v.vertex.y) + _HeightTexBottom;
-				#endif*/
+					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((target_pos.x - _HeightTexLeft) / _HeightTexLength, (target_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+					target_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
+
+					//面上的点
+					const float3 p = target_pos;
+					//面的法线
+					const float3 n = float3(0, 1, 0);
+					//光的方向
+					const float t = dot(orig - p, n) / dot(y_axis, n);
+					v.vertex.xyz -= y_axis * t;
+
+					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
+					v.vertex.xyz -= y_axis * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) / 2);
+				#endif
 				
 				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
