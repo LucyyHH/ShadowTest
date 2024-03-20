@@ -14,8 +14,10 @@
 		_HeightTexBottom("Height Tex Bottom", float) = 0
 		_HeightTexHigh("Height Tex High", float) = 0
 		_MaxOffset("Max Offset", float) = 0
-		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
 		[HideInInspector]_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
+		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
+		_StepLength("Step Length", float) = 1.0
+		[Toggle(_COMPLEX)] _Complex("Complex", Float) = 0
 	}
 	SubShader
 	{
@@ -68,6 +70,7 @@
 			float _MaxOffset;
 			float4 _MainLightDir;
 			float4 _ShadowDir;
+			float _StepLength;
 			CBUFFER_END
 
 			// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
@@ -77,7 +80,7 @@
 			// put more per-instance properties here
 			UNITY_INSTANCING_BUFFER_END(Props)
 			
- 			#pragma multi_compile_local __ _FIXED_LIGHT_DIR
+ 			#pragma multi_compile_local __ _FIXED_LIGHT_DIR _COMPLEX
 
 			struct appdata
 			{
@@ -92,6 +95,16 @@
 				float3 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
+
+			half3 sample_height(half2 uv_pos)
+			{
+				return SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+			}
+
+			half3 get_height(const half height)
+			{
+				return height * _HeightTexHigh + _HeightTexBottom;
+			}
  
 			v2f vert(appdata v)
 			{
@@ -107,7 +120,7 @@
 				float3 target_pos = v.vertex;
 				half3 y_axis;
 				half3 height;
-				#if _FIXED_LIGHT_DIR
+#if _FIXED_LIGHT_DIR
 					y_axis = normalize(-_ShadowDir.xyz);
 					/*convert_pos = mul(convert_pos, half3x3(1, 0, 0,
 									normalize_y.x, normalize_y.y, normalize_y.z,
@@ -118,21 +131,31 @@
 									//light_dir = normalize(_MainLightDir.xyz);
 					float3 uv_pos = mul(half3x3(1, y_axis.x, 0,
 					                0, y_axis.y, 0,
-					                0, y_axis.z, 1), float3(convert_pos.x, _HeightTexBottom, convert_pos.z));
+					                0, y_axis.z, 1), float3(target_pos.x, _HeightTexBottom, target_pos.z));
 
-					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((target_pos.x - _HeightTexLeft) / _HeightTexLength, (target_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
-					convert_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
+					height = sample_height(target_pos.xz);
+					target_pos.y = get_height(height.r);
 
 					v.vertex.xyz = mul(half3x3(1, y_axis.x, 0,
 					                0, y_axis.y, 0,
-					                0, y_axis.z, 1), convert_pos);
-				#else
+					                0, y_axis.z, 1), target_pos);
+#else
 					y_axis = normalize(-_MainLightDir.xyz);
 
-					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((target_pos.x - _HeightTexLeft) / _HeightTexLength, (target_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
-					target_pos.y = height.r * _HeightTexHigh + _HeightTexBottom;
+					height = sample_height(target_pos.xz);
+				
+	#if _COMPLEX
+					while (target_pos.y - height.y > _StepLength)
+					{
+						target_pos.xyz -= y_axis * _StepLength;
+						height = sample_height(v.vertex.xz);
+					}
+					target_pos.y = get_height(height.r);
+					v.vertex.xyz = target_pos;
+	#else
 
 					//面上的点
+					target_pos.y = get_height(height.r);
 					const float3 p = target_pos;
 					//面的法线
 					const float3 n = float3(0, 1, 0);
@@ -140,9 +163,10 @@
 					const float t = dot(orig - p, n) / dot(y_axis, n);
 					v.vertex.xyz -= y_axis * t;
 
-					height = SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((v.vertex.x - _HeightTexLeft) / _HeightTexLength, (v.vertex.z - _HeightTexBack) / _HeightTexWidth), 0);
+					height = sample_height(v.vertex.xz);
 					v.vertex.xyz -= y_axis * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) / 2);
-				#endif
+	#endif
+#endif
 				
 				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
