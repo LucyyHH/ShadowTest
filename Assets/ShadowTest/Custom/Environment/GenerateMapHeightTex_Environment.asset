@@ -21,11 +21,12 @@ MonoBehaviour:
   resolutionY: 256
   path: ShadowTest/Custom/Environment
   checkInInsideTriangleTolerance: 0.06
+  heightCheckHideDiff: 1
   fixedShadowDir: 1
   shadowDir:
-    x: -1
+    x: 0
     y: -1
-    z: -1
+    z: 0
   needLimitLeft: 1
   leftLimit: -23
   needLimitRight: 1

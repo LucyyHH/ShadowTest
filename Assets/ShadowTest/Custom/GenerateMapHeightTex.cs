@@ -263,7 +263,6 @@ namespace ShadowTest.Custom {
                 BackLimit = backLimit,
                 TopLimit = topLimit,
                 BottomLimit = bottomLimit,
-                ChangeShadowDir = fixedShadowDir,
                 ShadowMatrix = shadowMatrix,
             };
             var meshVerticesHandle = handleMeshVerticesJob.Schedule(meshInfoVoList.Length, InnerLoopBatchCount);
@@ -324,7 +323,6 @@ namespace ShadowTest.Custom {
                 ConvertBottom = convertMapBoundary.Bottom,
                 CurHeightArray = curHeightArray,
                 ShadowMatrix = shadowMatrix,
-                InvShadowMatrix = invShadowMatrix,
                 CheckInInsideTriangleTolerance = checkInInsideTriangleTolerance
             };
             var calculateHeightHandle = calculateHeightJob.Schedule(pixelCount, InnerLoopBatchCount);
@@ -446,7 +444,6 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float BackLimit;
             [ReadOnly] public float TopLimit;
             [ReadOnly] public float BottomLimit;
-            [ReadOnly] public bool ChangeShadowDir;
             [ReadOnly] public float3x3 ShadowMatrix;
 
             public NativeArray<TriangleInfo> TriangleInfoArray;
@@ -462,12 +459,12 @@ namespace ShadowTest.Custom {
                     ConvertBoundary = GetDefaultMapBoundary(),
                     WorldPos1 = meshInfoVo.MeshWordPos1,
                     WorldPos2 = meshInfoVo.MeshWordPos2,
-                    WorldPos3 = meshInfoVo.MeshWordPos3
+                    WorldPos3 = meshInfoVo.MeshWordPos3,
+                    ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1),
+                    ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2),
+                    ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3)
                 };
 
-                triangleInfo.ConvertWorldPos1 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos1);
-                triangleInfo.ConvertWorldPos2 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos2);
-                triangleInfo.ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3);
                 triangleInfo.Normal = math.normalizesafe(math.cross(triangleInfo.ConvertWorldPos2 - triangleInfo.ConvertWorldPos1,
                     triangleInfo.ConvertWorldPos3 - triangleInfo.ConvertWorldPos2));
 
@@ -510,7 +507,6 @@ namespace ShadowTest.Custom {
             [ReadOnly] public float ConvertBottom;
             
             [ReadOnly] public float3x3 ShadowMatrix;
-            [ReadOnly] public float3x3 InvShadowMatrix;
 
             [ReadOnly] public float CheckInInsideTriangleTolerance;
 
@@ -688,9 +684,9 @@ namespace ShadowTest.Custom {
                 }
 
                 return curSin * heightOffset;
-            } else {
-                return 0;
             }
+            
+            return 0;
         }
         
         /// <summary>
@@ -700,15 +696,18 @@ namespace ShadowTest.Custom {
             var triangleHeightInfo = curHeightArray[index];
             var curH = triangleHeightInfo.Height;
             if(curH > bottom) {
-                if(xIndex - 1 >= 0 && math.abs(curH - curHeightArray[index - 1].Height) > checkHideDiff 
-                   || xIndex + 1 < resolutionX && math.abs(curH - curHeightArray[index + 1].Height) > checkHideDiff
-                   || yIndex - 1 >= 0 && math.abs(curH - curHeightArray[index - 1 * resolutionX].Height) > checkHideDiff
-                   || yIndex + 1 < resolutionY && math.abs(curH - curHeightArray[index + 1 * resolutionX].Height) > checkHideDiff) {
-                    return 0;
+                for(var i = 1; i <= 2; i++) {
+                    if(xIndex - i >= 0 && math.abs(curH - curHeightArray[index - i].Height) > checkHideDiff || 
+                       yIndex - i >= 0 && math.abs(curH - curHeightArray[index - i * resolutionX].Height) > checkHideDiff) {
+                        return 1f;
+                    }
+                    if(xIndex + i < resolutionX && math.abs(curH - curHeightArray[index + i].Height) > checkHideDiff || 
+                       yIndex + i < resolutionY && math.abs(curH - curHeightArray[index + i * resolutionX].Height) > checkHideDiff) {
+                        return 1f;
+                    }
                 }
             } 
-            
-            return 1;
+            return 0;
         }
 
         /// <summary>

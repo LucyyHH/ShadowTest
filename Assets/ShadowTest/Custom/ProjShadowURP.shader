@@ -61,6 +61,7 @@
 			float _LandHeight;
 			float _LandHeightOffset;
 			float4 _HeightTex_ST;
+			float4 _HeightTex_TexelSize;
 			float _HeightTexLeft;
 			float _HeightTexLength;
 			float _HeightTexBack;
@@ -96,9 +97,23 @@
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
-			half3 sample_height(half2 uv_pos)
+			half3 sample_height(const half2 uv)
 			{
-				return SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.z - _HeightTexBack) / _HeightTexWidth), 0);
+				return SAMPLE_TEXTURE2D_LOD(_HeightTex, sampler_HeightTex, uv, 0);
+			}
+			
+			half2 get_uv(half2 uv_pos)
+			{
+				return half2((uv_pos.x - _HeightTexLeft) / _HeightTexLength, (uv_pos.y - _HeightTexBack) / _HeightTexWidth);
+			}
+			
+			half3 sample_height_check_edge(half2 uv)
+			{
+				half3 height = sample_height(uv);
+				uv = height.b == 1 ? round(uv * _HeightTex_TexelSize.zw) / _HeightTex_TexelSize.zw : uv;
+				//uv = height.b > 0.9 ? uv * _HeightTex_TexelSize.zw + _HeightTex_TexelSize.xy / 2.0 : uv;
+				//uv = height.b > 0.9 ? uv : floor(uv * _HeightTex_ST.zw) / _HeightTex_ST.zw;
+				return sample_height(uv);
 			}
 
 			half3 get_height(const half height)
@@ -133,7 +148,8 @@
 					                0, y_axis.y, 0,
 					                0, y_axis.z, 1), float3(target_pos.x, _HeightTexBottom, target_pos.z));
 
-					height = sample_height(target_pos.xz);
+					height = sample_height_check_edge(get_uv(uv_pos.xz));
+					
 					target_pos.y = get_height(height.r);
 
 					v.vertex.xyz = mul(half3x3(1, y_axis.x, 0,
@@ -142,13 +158,13 @@
 #else
 					y_axis = normalize(-_MainLightDir.xyz);
 
-					height = sample_height(target_pos.xz);
+					height = sample_height(get_uv(target_pos.xz));;
 				
 	#if _COMPLEX
 					while (target_pos.y - height.y > _StepLength)
 					{
 						target_pos.xyz -= y_axis * _StepLength;
-						height = sample_height(v.vertex.xz);
+						height = sample_height(get_uv(v.vertex.xz));
 					}
 					target_pos.y = get_height(height.r);
 					v.vertex.xyz = target_pos;
@@ -163,19 +179,19 @@
 					const float t = dot(orig - p, n) / dot(y_axis, n);
 					v.vertex.xyz -= y_axis * t;
 
-					height = sample_height(v.vertex.xz);
+					height = sample_height(get_uv(v.vertex.xz));
 					v.vertex.xyz -= y_axis * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) / 2);
 	#endif
 #endif
 				
-				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
+				//v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
 				// 是否需要显示阴影
-				o.uv.z = step(0, dot(y_axis, orig - v.vertex)) * height.b;
+				o.uv.z = step(0, dot(y_axis, orig - v.vertex));
 				//o.uv.z = 1;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
-				o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+				o.uv.xy = v.uv;
 
 				return o;
 			}
