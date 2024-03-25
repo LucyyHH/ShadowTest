@@ -93,7 +93,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				float3 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -148,7 +148,7 @@
 					                0, y_axis.y, 0,
 					                0, y_axis.z, 1), float3(target_pos.x, _HeightTexBottom, target_pos.z));
 
-					height = sample_height_check_edge(get_uv(uv_pos.xz));
+					height = sample_height(get_uv(uv_pos.xz));
 					
 					target_pos.y = get_height(height.r);
 
@@ -184,11 +184,13 @@
 	#endif
 #endif
 				
-				//v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
+				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
 				// 是否需要显示阴影
 				o.uv.z = step(0, dot(y_axis, orig - v.vertex));
 				//o.uv.z = 1;
+
+				o.uv.w = height.b;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
 				o.uv.xy = v.uv;
@@ -202,7 +204,7 @@
 				/*float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 				clip(tex.a - 0.5);*/
 				
-				return half4(0, 0, 0, i.uv.z * _Alpha);
+				return half4(0, 0, 0, step(i.uv.w, 0.99) * i.uv.z * _Alpha);
 			}
 			
 			ENDHLSL
