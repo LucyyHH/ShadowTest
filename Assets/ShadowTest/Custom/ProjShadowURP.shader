@@ -187,9 +187,8 @@
 				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
 
 				// 是否需要显示阴影
-				o.uv.z = step(0, dot(y_axis, orig - v.vertex));
+				o.uv.z = dot(y_axis, orig - v.vertex); // 如果需要更准确，可以把v.vertex传到frag，在frag里计算这段逻辑
 				//o.uv.z = 1;
-
 				o.uv.w = height.b;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
@@ -203,8 +202,11 @@
 				UNITY_SETUP_INSTANCE_ID(i);
 				/*float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 				clip(tex.a - 0.5);*/
+
+				const half check_side = step(0, i.uv.z);		//检查生成点和原点的位置是否需要显示
+				const half check_height = step(i.uv.w, 0.99);	//根据高度检查是否需要显示
 				
-				return half4(0, 0, 0, step(i.uv.w, 0.99) * i.uv.z * _Alpha);
+				return half4(0, 0, 0, check_side * check_height * _Alpha);
 			}
 			
 			ENDHLSL
