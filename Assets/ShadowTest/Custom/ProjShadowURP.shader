@@ -161,10 +161,13 @@
 					height = sample_height(get_uv(target_pos.xz));;
 				
 	#if _COMPLEX
-					while (target_pos.y - height.y > _StepLength)
+					for (int i = 0; i < 100; ++i)
 					{
-						target_pos.xyz -= y_axis * _StepLength;
-						height = sample_height(get_uv(v.vertex.xz));
+						if(target_pos.y - height.y > 0.1)
+						{
+							target_pos.xyz -= y_axis * _StepLength;
+							height = sample_height(get_uv(target_pos.xz));
+						}
 					}
 					target_pos.y = get_height(height.r);
 					v.vertex.xyz = target_pos;

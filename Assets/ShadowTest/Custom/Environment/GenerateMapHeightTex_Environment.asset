@@ -22,7 +22,7 @@ MonoBehaviour:
   path: ShadowTest/Custom/Environment
   checkInInsideTriangleTolerance: 0.06
   heightCheckHideDiff: 1
-  fixedShadowDir: 1
+  fixedShadowDir: 0
   shadowDir:
     x: 0
     y: -1
