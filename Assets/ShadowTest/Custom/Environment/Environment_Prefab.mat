@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: fff5ad81ee3e4fb7b610d92c8195f2bf, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _COMPLEX
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -37,7 +38,7 @@ Material:
     - _BaseHeight1: 2.11
     - _BaseHeight2: 2.11
     - _BaseHeight3: 27.78
-    - _Complex: 0
+    - _Complex: 1
     - _FinalHeight1: 2.12
     - _FinalHeight2: 2.12
     - _FinalHeight3: 27.79
@@ -52,8 +53,8 @@ Material:
     - _MaxHeight1: 4.9582205
     - _MaxHeight2: 4.9582205
     - _MaxOffset: 0.08860232
-    - _StepLength: 1
+    - _StepLength: 0.01
     m_Colors:
-    - _MainLightDir: {r: 0, g: -0.15, b: 0, a: 0}
+    - _MainLightDir: {r: -1, g: -1, b: -1, a: 0}
     - _ShadowDir: {r: 0, g: -1, b: 0, a: 0}
   m_BuildTextureStacks: []
