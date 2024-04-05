@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using Random = UnityEngine.Random;
 
 namespace ShadowTest {
     public class UIDocumentCtrl : MonoBehaviour {
@@ -26,8 +24,7 @@ namespace ShadowTest {
         public enum SceneType {
             Default,
             Custom,
-            ProjectorShadow,
-            ShadowMap
+            ProjectorShadow
         }
         
         private void Awake() {
@@ -63,6 +60,8 @@ namespace ShadowTest {
                     _gameObjects.Add(Instantiate(goGenerate));
                 }
             }
+
+            GetComponent<IGenerateComplete>()?.Callback(_gameObjects);
         }
 
         private void UpdateLabelText() {

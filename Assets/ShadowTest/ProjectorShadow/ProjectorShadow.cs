@@ -111,7 +111,7 @@ using Object = UnityEngine.Object;
         /// <summary>
         ///     初始化
         /// </summary>
-        public void Init (ProjectorConfig config){
+        public void Init (ProjectorConfig config, Material material){
             //--------------------------------------------创建对象--------------------------------------------
             if (!m_parentObj){
                 m_parentObj = new GameObject ("Projector shadow");
@@ -123,7 +123,7 @@ using Object = UnityEngine.Object;
                         rotation = config.ProjectorRotate
                     },
                     gameObject ={
-                        layer = LayerMask.NameToLayer ("BackGround")
+                        layer = LayerMask.NameToLayer ("GenerateHeightMap")
                     }
                 };
             
@@ -134,7 +134,7 @@ using Object = UnityEngine.Object;
                         rotation = config.ShadowCameraRotate
                     },
                     gameObject ={
-                        layer = LayerMask.NameToLayer ("BackGround")
+                        layer = LayerMask.NameToLayer ("GenerateHeightMap")
                     }
                 };
                 //--------------------------------------------准备各种组件--------------------------------------------
@@ -195,7 +195,7 @@ using Object = UnityEngine.Object;
             }
 
             //--------------------------------------------Projector属性设置--------------------------------------------
-            //m_urpProjector.material = Object.Instantiate (BY_AssetUtilU5.GetAsset (0,"Common/ProjectorShadowMat.mat")) as Material;
+            m_urpProjector.material = material;
             // todo 设置材质
             m_urpProjector.material.SetTexture (ShadowTex, m_cameraRT);
             m_urpProjector.material.SetFloat (Intensity, config.ShadowIntensity);

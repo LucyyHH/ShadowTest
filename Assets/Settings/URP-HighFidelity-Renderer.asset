@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
+%TAG !u! tag:yousandi.cn,2023:
 --- !u!114 &-5627696897289463769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13,15 +13,10 @@ MonoBehaviour:
   m_Name: SceneProjShadowRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  projShadowMaterial: {fileID: 2100000, guid: 417334ded7e0e6741850780462cdd348, type: 2}
+  projShadowMaterial: {fileID: 2100000, guid: 136ea7830fd474d4397aada4d655a988, type: 2}
   layerMask:
     serializedVersion: 2
-    m_Bits: 0
-  layerMaskParameter:
-    m_OverrideState: 0
-    m_Value:
-      serializedVersion: 2
-      m_Bits: 0
+    m_Bits: 64
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0

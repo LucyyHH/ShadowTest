@@ -1,13 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
-{
+public class SetupProjectorShadow : MonoBehaviour {
+	public Material material;
+	public ProjectorShadow projectorShadow;
+	
     // Start is called before the first frame update
     void Start()
     {
-        var m_ProjectorShadow = new ProjectorShadow ();
+        projectorShadow = new ProjectorShadow ();
         ProjectorShadow.ProjectorConfig config = new ProjectorShadow.ProjectorConfig
         {
 	        ShadowTexHeight = Screen.height,
@@ -15,18 +15,17 @@ public class NewBehaviourScript : MonoBehaviour
 	        CameraNearClipPlane = 0.3f,
 	        CameraFarClipPlane = 10000f,
 	        Orthographic = true,
-	        CameraSize = 10,
-	        ProjectorIgnoreLayers = (1 << LayerMask.NameToLayer("Fish3")) +
-	                                (1 << LayerMask.NameToLayer("Fish2")) +
-	                                (1 << LayerMask.NameToLayer("Fish1")) +
-	                                (1 << LayerMask.NameToLayer("GameFishWithLight")),
-	        ProjectorPos = new Vector3(0, -40f, 2.6f),
-	        ShadowCameraPos = new Vector3(0, -40f, 2.6f),
+	        CameraSize = 15,
+	        ProjectorIgnoreLayers = 1 << LayerMask.NameToLayer("GenerateShadow"),
+	        ProjectorPos = new Vector3(10, 100, 10),
+	        ShadowCameraPos = new Vector3(10, 100, 10),
 	        ProjectorRotate = Quaternion.Euler(new Vector3(90, 0, 0)),
 	        ShadowCameraRotate = Quaternion.Euler(new Vector3(90, 0, 0)),
 	        ShadowIntensity = 0.6f,
         };
-        m_ProjectorShadow.Init (config);
+        projectorShadow.Init (config, material);
+
+        projectorShadow.EnableShadow();
     }
 
     // Update is called once per frame

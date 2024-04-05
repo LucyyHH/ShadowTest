@@ -16,8 +16,6 @@
 		_MaxOffset("Max Offset", float) = 0
 		[HideInInspector]_ShadowDir("Shadow Dir", Vector) = (1, 1, 1, 1)
 		_MainLightDir("Main Light Dir(Invalid if Fixed)", Vector) = (1, 1, 1, 1)
-		_StepLength("Step Length", float) = 1.0
-		[Toggle(_COMPLEX)] _Complex("Complex", Float) = 0
 	}
 	SubShader
 	{
@@ -71,7 +69,6 @@
 			float _MaxOffset;
 			float4 _MainLightDir;
 			float4 _ShadowDir;
-			float _StepLength;
 			CBUFFER_END
 
 			// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
@@ -81,7 +78,7 @@
 			// put more per-instance properties here
 			UNITY_INSTANCING_BUFFER_END(Props)
 			
- 			#pragma multi_compile_local __ _FIXED_LIGHT_DIR _COMPLEX
+ 			#pragma multi_compile_local __ _FIXED_LIGHT_DIR
 
 			struct appdata
 			{
@@ -160,19 +157,6 @@
 
 					height = sample_height(get_uv(target_pos.xz));;
 				
-	#if _COMPLEX
-					for (int i = 0; i < 100; ++i)
-					{
-						if(target_pos.y - height.y > 0.1)
-						{
-							target_pos.xyz -= y_axis * _StepLength;
-							height = sample_height(get_uv(target_pos.xz));
-						}
-					}
-					target_pos.y = get_height(height.r);
-					v.vertex.xyz = target_pos;
-	#else
-
 					//面上的点
 					target_pos.y = get_height(height.r);
 					const float3 p = target_pos;
@@ -184,7 +168,6 @@
 
 					height = sample_height(get_uv(v.vertex.xz));
 					v.vertex.xyz -= y_axis * ((v.vertex.y - (height.r * _HeightTexHigh + _HeightTexBottom)) / 2);
-	#endif
 #endif
 				
 				v.vertex.xyz += (height.g * _MaxOffset + _LandHeightOffset) * y_axis/*view*/;
@@ -215,6 +198,4 @@
 			ENDHLSL
 		}
 	}
-
-	Fallback "Universal Render Pipeline/Simple Lit"
 }
