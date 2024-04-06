@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:IntegerField value="100" name="txtGenerate" style="width: 90px; flex-direction: column; align-items: stretch; align-self: auto; justify-content: center; color: rgb(0, 0, 0); -unity-text-outline-color: rgba(156, 255, 0, 0.55); -unity-text-outline-width: 0.5px; font-size: 15px;" />
-    <ui:Button text="生成" enable-rich-text="false" name="btnGenerate" style="width: 90px;" />
+    <ui:Label tabindex="-1" display-tooltip-when-elided="true" enable-rich-text="false" name="txtDebugInfo" style="color: rgb(77, 255, 0);" />
+    <ui:IntegerField value="100" name="txtGenerate" style="width: 90px; flex-direction: column; align-items: stretch; align-self: flex-start; justify-content: center; color: rgb(0, 0, 0); -unity-text-outline-color: rgba(156, 255, 0, 0.55); -unity-text-outline-width: 0.5px; font-size: 15px;" />
+    <ui:Button text="生成" enable-rich-text="false" name="btnGenerate" style="width: 90px; align-self: flex-start;" />
 </ui:UXML>
