@@ -195,22 +195,19 @@ namespace ShadowTest.Custom {
 
             var mapBoundary = GetDefaultMapBoundary();
             var convertMapBoundary = GetDefaultMapBoundary();
-
+            
+            // 1. 遍历整个场景需要接收影子的mesh，将mesh的顶点转化到世界坐标系，并存储到meshInfoVoList中
             var meshFilters = mapGo.GetComponentsInChildren<MeshFilter>();
-
             var meshInfoVoList = new NativeList<MeshInfoVo>(Allocator);
             foreach(var meshFilter in meshFilters) {
                 var gameObject = meshFilter.gameObject;
                 var normalLayer = ((1 << gameObject.layer) & normalHeightLayer.value) != 0;
                 var offsetLayer = checkHeightOffsetLayer && ((1 << gameObject.layer) & heightOffsetLayer.value) != 0;
                 
-                
                 if(!normalLayer && !offsetLayer) continue;
                 
                 var sharedMesh = meshFilter.sharedMesh;
-
                 var curType = normalLayer ? TriangleType.Normal : TriangleType.Offset;
-
                 for(var i = 0; i < sharedMesh.triangles.Length; i += 3) {
                     meshInfoVoList.Add(new MeshInfoVo
                     {
@@ -227,7 +224,6 @@ namespace ShadowTest.Custom {
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
                                                         : float3x3.identity;*/
-            
             var invShadowMatrix = fixedShadowDir ? 
                 new float3x3(
                     1, yAxis.x, 0,
@@ -465,9 +461,11 @@ namespace ShadowTest.Custom {
                     ConvertWorldPos3 = math.mul(ShadowMatrix, meshInfoVo.MeshWordPos3)
                 };
 
+                // 计算法线
                 triangleInfo.Normal = math.normalizesafe(math.cross(triangleInfo.ConvertWorldPos2 - triangleInfo.ConvertWorldPos1,
                     triangleInfo.ConvertWorldPos3 - triangleInfo.ConvertWorldPos2));
 
+                // 生成边界信息
                 CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos1);
                 CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos2);
                 CheckBounds(ref triangleInfo.Boundary, triangleInfo.WorldPos3);
