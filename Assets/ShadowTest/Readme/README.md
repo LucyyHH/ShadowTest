@@ -59,6 +59,8 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
    ```
 3. 遍历从2得到的triangleInfoArray列表，将在边界内的三角形存储到usedTriangleInfoList中
 4. 开启CalculateHeightJob()任务计算高度
+5. 开启CalculateOffsetHeightJob()任务计算高度
+6. 保存材质球信息
 
 ##### 绘制影子
 
