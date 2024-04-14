@@ -28,7 +28,6 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 2. 拖入需要生成高度图的Prefab，配置需要生成高度go的layer、分辨率、路径等，点击“生成”按钮生成材质球
 
    <img alt="Step2_1" src="Resources/Custom/Step2_1.png" width="500"/>
-   <img alt="Step2_2" src="Resources/Custom/Step2_2.png" width="500"/>
 3. 在Universal Renderer Data中添加Render Feature，将2生成的材质球拖到Proj Shadow Material，并配置需要生成阴影的Layer
 
    <img alt="Step3_1" src="Resources/Custom/Step3_1.png" width="500"/>
