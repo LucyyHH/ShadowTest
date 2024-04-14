@@ -22,7 +22,7 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ## 使用
 1. 创建生成高度图的Asset
 
-   <img alt="Step1_1" src="Resources/Custom/Step1_1.png" width="100"/>
+   <img alt="Step1_1" src="Resources/Custom/Step1_1.png" width="1000"/>
    <img alt="Step1_2" src="Resources/Custom/Step1_2.png" width="300"/>
    <img alt="Step1_3" src="Resources/Custom/Step1_3.png" width="500"/>
 2. 拖入需要生成高度图的Prefab，配置需要生成高度go的layer、分辨率、路径等，点击“生成”按钮生成材质球
