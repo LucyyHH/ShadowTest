@@ -21,33 +21,34 @@ namespace ShadowTest.Custom.Editor {
             var curNeedShow = true;
             iterator.NextVisible(true);
             EditorGUILayout.PropertyField(iterator);
+            var haveMapGo = _generateMapHeightTex.mapGo != null;
             while(iterator.NextVisible(false)) {
-                var curShow = true;
+                var curShow = haveMapGo;
                 
                 if(iterator.name == "mapGo") {
-                    curNeedShow = !ReferenceEquals(_generateMapHeightTex.mapGo, null);
+                    curShow = curNeedShow = true;
                 } else if(iterator.name == "fixedShadowDir") {
-                    curNeedShow = _generateMapHeightTex.fixedShadowDir;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.fixedShadowDir;
                 } else if(iterator.name == "fixedShadowDir") {
-                    curNeedShow = _generateMapHeightTex.fixedShadowDir;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.fixedShadowDir;
                 } else if(iterator.name == "needLimitLeft") {
-                    curNeedShow = _generateMapHeightTex.needLimitLeft;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitLeft;
                 } else if(iterator.name == "needLimitRight") {
-                    curNeedShow = _generateMapHeightTex.needLimitRight;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitRight;
                 } else if(iterator.name == "needLimitBottom") {
-                    curNeedShow = _generateMapHeightTex.needLimitBottom;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitBottom;
                 } else if(iterator.name == "needLimitTop") {
-                    curNeedShow = _generateMapHeightTex.needLimitTop;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitTop;
                 } else if(iterator.name == "needLimitBack") {
-                    curNeedShow = _generateMapHeightTex.needLimitBack;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitBack;
                 } else if(iterator.name == "needLimitFront") {
-                    curNeedShow = _generateMapHeightTex.needLimitFront;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needLimitFront;
                 } else if(iterator.name == "needHeightOffset") {
-                    curNeedShow = _generateMapHeightTex.needHeightOffset;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.needHeightOffset;
                 } else if(iterator.name == "checkHeightOffsetLayer") {
-                    curNeedShow = _generateMapHeightTex.checkHeightOffsetLayer;
+                    curNeedShow = haveMapGo && _generateMapHeightTex.checkHeightOffsetLayer;
                 } else {
-                    curShow = curNeedShow;
+                    curShow = haveMapGo && curNeedShow;
                 }
                 
                 if(curShow) {
@@ -55,7 +56,7 @@ namespace ShadowTest.Custom.Editor {
                 }
             }
             
-            if(GUILayout.Button("生成")) {
+            if(haveMapGo && GUILayout.Button("生成")) {
                 _generateMapHeightTex.GenerateMapHeightTexture();
             }
 
