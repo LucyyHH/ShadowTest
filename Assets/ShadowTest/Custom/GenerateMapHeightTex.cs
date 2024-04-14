@@ -224,7 +224,7 @@ namespace ShadowTest.Custom {
                                                                     shadowDirNormalize.x, shadowDirNormalize.y, shadowDirNormalize.z,
                                                                     0, 0, 1))
                                                         : float3x3.identity;*/
-            var invShadowMatrix = fixedShadowDir ? 
+            var inverseShadowMatrix = fixedShadowDir ? 
                 new float3x3(
                     1, yAxis.x, 0,
                     0, yAxis.y, 0,
@@ -265,7 +265,7 @@ namespace ShadowTest.Custom {
             meshVerticesHandle.Complete();
             meshInfoVoList.Dispose();
 
-            // 处理
+            // 处理生成的三角形信息
             var usedTriangleInfoList = new NativeList<TriangleInfo>(Allocator);
             foreach(var triangleInfo in triangleInfoArray) {
                 if(triangleInfo.Type == TriangleType.Unavailable) continue;
@@ -519,9 +519,9 @@ namespace ShadowTest.Custom {
                 // 计算当前像素世界坐标
                 var xIndex = index % ResolutionX;
                 var yIndex = index / ResolutionX;
-                var curPosX = Left + (0.5f + xIndex) * StepX;
-                var curPosY = Back + (0.5f + yIndex) * StepY;
-                var curPoint = new float3(curPosX, Bottom, curPosY);
+                var curPositionX = Left + (0.5f + xIndex) * StepX;
+                var curPositionY = Back + (0.5f + yIndex) * StepY;
+                var curPoint = new float3(curPositionX, Bottom, curPositionY);
                 // 当前像素点转化到新坐标系后的坐标
                 var curConvertPoint = math.mul(ShadowMatrix, curPoint);
                 //Debug.Log($"{curPoint}_{curConvertPoint}");
@@ -532,8 +532,8 @@ namespace ShadowTest.Custom {
                     }
 
                     // 是否在包围盒里
-                    if(curPosX < triangleInfo.ConvertBoundary.Left || curPosX > triangleInfo.ConvertBoundary.Right ||
-                       curPosY < triangleInfo.ConvertBoundary.Back || curPosY > triangleInfo.ConvertBoundary.Front) {
+                    if(curPositionX < triangleInfo.ConvertBoundary.Left || curPositionX > triangleInfo.ConvertBoundary.Right ||
+                       curPositionY < triangleInfo.ConvertBoundary.Back || curPositionY > triangleInfo.ConvertBoundary.Front) {
                         continue;
                     }
 
@@ -633,7 +633,7 @@ namespace ShadowTest.Custom {
                 if(NeedHeightOffset) {
                     CurOffsetHeightArray[index] = CalculateCurHeightOffset(index, xIndex, yIndex, CurHeightArray, StepX, StepY, ConvertBottom, ResolutionX, ResolutionY, CheckLength, CheckHeightOffsetLayer, HeightOffsetSinMin, HeightOffsetSinMax, HeightOffset);
                 }
-                CurEdgeHeightArray[index] = CalculateCurHeightHide(index, xIndex, yIndex, HeightCheckHideDiff, CurHeightArray, ConvertBottom, ResolutionX, ResolutionY);
+                CurEdgeHeightArray[index] = CalculateCurHeightEdge(index, xIndex, yIndex, HeightCheckHideDiff, CurHeightArray, ConvertBottom, ResolutionX, ResolutionY);
             }
         }
 
@@ -692,10 +692,11 @@ namespace ShadowTest.Custom {
         /// <summary>
         /// 计算高度偏移
         /// </summary>
-        private static float CalculateCurHeightHide(int index, int xIndex, int yIndex, float checkHideDiff, NativeArray<TriangleHeightInfo> curHeightArray, float bottom, int resolutionX, int resolutionY) {
+        private static float CalculateCurHeightEdge(int index, int xIndex, int yIndex, float checkHideDiff, NativeArray<TriangleHeightInfo> curHeightArray, float bottom, int resolutionX, int resolutionY) {
             var triangleHeightInfo = curHeightArray[index];
             var curH = triangleHeightInfo.Height;
             if(curH > bottom) {
+                // 检查左右上下两像素高度差是否大于设置的值checkHideDiff,大于则标记为边界
                 for(var i = 1; i <= 2; i++) {
                     if(xIndex - i >= 0 && math.abs(curH - curHeightArray[index - i].Height) > checkHideDiff || 
                        yIndex - i >= 0 && math.abs(curH - curHeightArray[index - i * resolutionX].Height) > checkHideDiff) {

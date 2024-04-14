@@ -174,7 +174,7 @@
 
 				// 是否需要显示阴影
 				o.uv.z = dot(y_axis, orig - v.vertex); // 如果需要更准确，可以把v.vertex传到frag，在frag里计算这段逻辑
-				//o.uv.z = 1;
+				// 传递边界值到frag
 				o.uv.w = height.b;
 				
 				o.vertex = mul(unity_MatrixVP, v.vertex);
