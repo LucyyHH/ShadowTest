@@ -22,22 +22,22 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ## 使用
 1. 创建生成高度图的Asset
 
-   <img alt="Step1_1" height="200" src="Resources/Custom/Step1_1.png" width="200"/>
-   <img alt="Step1_2" height="200" src="Resources/Custom/Step1_2.png" width="200"/>
-   <img alt="Step1_3" height="200" src="Resources/Custom/Step1_3.png" width="200"/>
+   <img alt="Step1_1" src="Resources/Custom/Step1_1.png" width="1334" height="700"/>
+   <img alt="Step1_2" src="Resources/Custom/Step1_2.png" width="372" height="38"/>
+   <img alt="Step1_3" src="Resources/Custom/Step1_3.png" width="554" height="284"/>
 2. 拖入需要生成高度图的Prefab，配置需要生成高度go的layer、分辨率、路径等，点击“生成”按钮生成材质球
 
-   <img alt="Step2_1" height="200" src="Resources/Custom/Step2_1.png" width="200"/>
-   <img alt="Step2_2" height="200" src="Resources/Custom/Step2_2.png" width="200"/>
+   <img alt="Step2_1" src="Resources/Custom/Step2_1.png" width="825" height="1353"/>
+   <img alt="Step2_2" src="Resources/Custom/Step2_2.png" width="816" height="1361"/>
 3. 在Universal Renderer Data中添加Render Feature，将2生成的材质球拖到Proj Shadow Material，并配置需要生成阴影的Layer
 
-   <img alt="Step3_1" height="200" src="Resources/Custom/Step3_1.png" width="200"/>
+   <img alt="Step3_1" src="Resources/Custom/Step3_1.png" width="830" height="1017"/>
 4. （可选）固定灯光方向
 
-   <img alt="Step4_1" height="200" src="Resources/Custom/Step4_1.png" width="200"/>
+   <img alt="Step4_1" src="Resources/Custom/Step4_1.png" width="828" height="113"/>
 5. （可选）针对复杂度高的地形，勾选“使用高度偏移”来缓解阴影因精度问题导致穿透到模型里的问题
 
-   <img alt="Step5_1" height="200" src="Resources/Custom/Step5_1.png" width="200"/>
+   <img alt="Step5_1" src="Resources/Custom/Step5_1.png" width="807" height="367"/>
 
 ## 实现思路
 使用多线程计算缩短生成时间
