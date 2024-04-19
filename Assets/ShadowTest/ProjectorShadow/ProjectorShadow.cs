@@ -217,13 +217,13 @@ using Object = UnityEngine.Object;
 
         public void EnableShadow (){
             m_parentObj.SetActive (true);
-            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+            //RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            //RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
         public void DisableShadow (){
             m_parentObj.SetActive (false);
-            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            //RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
         }
 
         /// <summary>
