@@ -8,6 +8,7 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 
 ### 具体数据对比
 #### ProjectShadow方式
+
 ###### DrawCall
 ###### SetPassCall
 ###### 帧数
@@ -18,6 +19,14 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ###### SetPassCall
 ###### 帧数
 ###### 耗时
+[Custom_500.mp4](Resources%2FCustom_500.mp4)
+[Custom_5000.mp4](Resources%2FCustom_5000.mp4)
+[Custom_10000.mp4](Resources%2FCustom_10000.mp4)
+[Custom_15000.mp4](Resources%2FCustom_15000.mp4)
+[ProjectShadow_500.mp4](Resources%2FProjectShadow_500.mp4)
+[ProjectShadow_5000.mp4](Resources%2FProjectShadow_5000.mp4)
+[ProjectShadow_10000.mp4](Resources%2FProjectShadow_10000.mp4)
+[ProjectShadow_15000.mp4](Resources%2FProjectShadow_15000.mp4)
 
 ## 使用
 1. 创建生成高度图的Asset
