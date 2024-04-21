@@ -1,4 +1,4 @@
-﻿# 较平坦地形的影子绘制
+﻿# 较平坦地形固定镜头视角的影子绘制
 
 ## 两种方式对比
 ProjectShadow不光需要一个额外的相机去生成RT图，同时当前这种方式生成RT图时，每个需要影子的mesh都需要一个DrawCall（包括SetPassCall），而且生成影子时接受影子mesh中每个不能合批的都会增加一个DrawCall（包括SetPassCall）   
