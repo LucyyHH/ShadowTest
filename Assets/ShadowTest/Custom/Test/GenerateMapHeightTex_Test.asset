@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 326bbf9649e81b547ace2c877d3d7ecf, type: 3}
   m_Name: GenerateMapHeightTex_Test
   m_EditorClassIdentifier: 
-  mapGo: {fileID: 0}
-  mapMaterial: {fileID: 2100000, guid: 8c9a29c2486d0004ab00abe5e3a7f6fa, type: 2}
+  mapGo: {fileID: 8345070699079395523, guid: 7918e70c6c2a5a944816e856d2d2a1c6, type: 3}
+  mapMaterial: {fileID: 0}
   normalHeightLayer:
     serializedVersion: 2
     m_Bits: 8
-  resolutionX: 128
-  resolutionY: 128
-  path: 
+  resolutionX: 256
+  resolutionY: 256
+  path: ShadowTest/Custom/Test
   checkInInsideTriangleTolerance: 0.001
   heightCheckHideDiff: 3
   fixedShadowDir: 0
@@ -39,7 +39,7 @@ MonoBehaviour:
   backLimit: -3.4028235e+38
   needLimitFront: 0
   frontLimit: 3.4028235e+38
-  needHeightOffset: 0
+  needHeightOffset: 1
   heightOffset: 0.1
   heightOffsetSinMin: 0.05
   heightOffsetSinMax: 0.6

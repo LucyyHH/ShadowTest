@@ -6,27 +6,26 @@ ProjectShadow不光需要一个额外的相机去生成RT图，同时当前这�
 
 Custom方式，先在编辑器下生成一个贴图来近似当前场景的高度图，同时使用SRPBatching批量生成影子，根据数量不同会有几个SetPassCall（几千个mesh只需要三四个），每个需要影子的mesh需要一个DrawCall（但不包括SetPassCall）
 
-### 具体数据对比
+### 数据对比视频
 #### ProjectShadow方式
-
-###### DrawCall
-###### SetPassCall
-###### 帧数
-###### 耗时
+###### 500个mesh
+[ProjectShadow_500.mp4](Resources%2FProjectorShadow%2FProjectShadow_500.mp4)
+###### 5000个mesh
+[ProjectShadow_5000.mp4](Resources%2FProjectorShadow%2FProjectShadow_5000.mp4)
+###### 10000个mesh
+[ProjectShadow_10000.mp4](Resources%2FProjectorShadow%2FProjectShadow_10000.mp4)
+###### 15000个mesh
+[ProjectShadow_15000.mp4](Resources%2FProjectorShadow%2FProjectShadow_15000.mp4)
 #### ProjectShadow方式 合批使用替换mat
 #### Custom
-###### DrawCall
-###### SetPassCall
-###### 帧数
-###### 耗时
-[Custom_500.mp4](Resources%2FCustom_500.mp4)
-[Custom_5000.mp4](Resources%2FCustom_5000.mp4)
-[Custom_10000.mp4](Resources%2FCustom_10000.mp4)
-[Custom_15000.mp4](Resources%2FCustom_15000.mp4)
-[ProjectShadow_500.mp4](Resources%2FProjectShadow_500.mp4)
-[ProjectShadow_5000.mp4](Resources%2FProjectShadow_5000.mp4)
-[ProjectShadow_10000.mp4](Resources%2FProjectShadow_10000.mp4)
-[ProjectShadow_15000.mp4](Resources%2FProjectShadow_15000.mp4)
+###### 500个mesh
+[Custom_500.mp4](Resources%2FCustom%2FCustom_500.mp4)
+###### 5000个mesh
+[Custom_5000.mp4](Resources%2FCustom%2FCustom_5000.mp4)
+###### 10000个mesh
+[Custom_10000.mp4](Resources%2FCustom%2FCustom_10000.mp4)
+###### 15000个mesh
+[Custom_15000.mp4](Resources%2FCustom%2FCustom_15000.mp4)
 
 ## 使用
 1. 创建生成高度图的Asset
