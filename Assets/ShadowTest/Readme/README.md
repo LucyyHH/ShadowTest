@@ -9,7 +9,7 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ### 数据对比视频
 #### ProjectShadow方式
 ###### 500个mesh
-<video src="Resources%2FProjectorShadow%2FProjectShadow_500.mp4"></video>
+![ProjectShadow_500.gif](Resources%2FProjectorShadow%2FProjectShadow_500.gif)
 ###### 5000个mesh
 [ProjectShadow_5000.mp4](Resources%2FProjectorShadow%2FProjectShadow_5000.mp4)
 ###### 10000个mesh
