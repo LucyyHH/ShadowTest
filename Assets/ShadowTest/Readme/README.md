@@ -18,6 +18,7 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ![ProjectShadow_15000.gif](Resources%2FProjectorShadow%2FProjectShadow_15000.gif)
 #### ProjectShadow方式 合批使用替换mat
 #### Custom
+##### 第一种方式
 ###### 500个mesh
 ![Custom_500.gif](Resources%2FCustom%2FCustom_500.gif)
 ###### 5000个mesh
@@ -26,6 +27,15 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 ![Custom_10000.gif](Resources%2FCustom%2FCustom_10000.gif)
 ###### 15000个mesh
 ![Custom_15000.gif](Resources%2FCustom%2FCustom_15000.gif)
+##### 第二种方式（固定角度）
+###### 500个mesh
+![Custom_500_Fix.gif](Resources%2FCustom%2FCustom_500_Fix.gif)
+###### 5000个mesh
+![Custom_5000_Fix.gif](Resources%2FCustom%2FCustom_5000_Fix.gif)
+###### 10000个mesh
+![Custom_10000_Fix.gif](Resources%2FCustom%2FCustom_10000_Fix.gif)
+###### 15000个mesh
+![Custom_15000_Fix.gif](Resources%2FCustom%2FCustom_15000_Fix.gif)
 
 ## 使用
 1. 创建生成高度图的Asset
