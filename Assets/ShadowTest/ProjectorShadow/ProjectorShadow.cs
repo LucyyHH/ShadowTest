@@ -204,7 +204,8 @@ using Object = UnityEngine.Object;
             m_projectorForLwrp.renderQueueUpperBound = 2000;
             m_projectorForLwrp.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             //--------------------------------------------Camera属性设置--------------------------------------------
-            m_camera.cullingMask = 0;
+            //m_camera.cullingMask = 0;
+            m_camera.cullingMask = 1 << LayerMask.NameToLayer("GenerateShadow"); // 批量设置
             m_camera.depth = -100;
             m_camera.clearFlags = CameraClearFlags.SolidColor;
             m_camera.targetTexture = m_cameraRT;
