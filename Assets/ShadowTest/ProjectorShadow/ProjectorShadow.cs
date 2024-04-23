@@ -210,7 +210,7 @@ using Object = UnityEngine.Object;
             m_projectorForLwrp.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             //--------------------------------------------Camera属性设置--------------------------------------------
             //m_camera.cullingMask = 0;
-            m_camera.cullingMask = config.ShadowCameraLayerMask;
+            m_camera.cullingMask = _config.Batcher ? config.ShadowCameraLayerMask : 0;
             m_camera.depth = -100;
             m_camera.clearFlags = CameraClearFlags.SolidColor;
             m_camera.targetTexture = m_cameraRT;

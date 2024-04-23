@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -88,8 +89,6 @@ namespace ShadowTest {
  
         private void OnBtnGenerateClick(ClickEvent evt) {
             GenerateGos();
-
-            GetComponent<IGenerateComplete>()?.Callback(_gameObjects);
         }
 
         private void GenerateGos() {
@@ -97,10 +96,9 @@ namespace ShadowTest {
                 return;
             }
             
-            foreach(var go in _gameObjects) {
-                if(go) {
-                    Destroy(go);
-                }
+            foreach (var go in _gameObjects.Where(go => go))
+            {
+                Destroy(go);
             }
             _gameObjects.Clear();
             
@@ -134,6 +132,7 @@ namespace ShadowTest {
                 }
             }
 
+            GetComponent<IGenerateComplete>()?.Callback(_gameObjects);
         }
 
         private void UpdateLabelText() {
