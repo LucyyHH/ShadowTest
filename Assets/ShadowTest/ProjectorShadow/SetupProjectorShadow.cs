@@ -3,6 +3,7 @@ using UnityEngine;
 public class SetupProjectorShadow : MonoBehaviour {
 	public Material material;
 	public ProjectorShadow projectorShadow;
+	public bool batcher;
 	
     // Start is called before the first frame update
     void Start()
@@ -21,7 +22,9 @@ public class SetupProjectorShadow : MonoBehaviour {
 	        ShadowCameraPos = new Vector3(10, 100, 10),
 	        ProjectorRotate = Quaternion.Euler(new Vector3(90, 0, 0)),
 	        ShadowCameraRotate = Quaternion.Euler(new Vector3(90, 0, 0)),
+	        ShadowCameraLayerMask = 1 << LayerMask.NameToLayer("GenerateShadow"),
 	        ShadowIntensity = 0.6f,
+	        Batcher = batcher
         };
         projectorShadow.Init (config, material);
 

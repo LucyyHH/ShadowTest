@@ -25,7 +25,9 @@ using Object = UnityEngine.Object;
             public Quaternion ProjectorRotate;
             public Vector3 ShadowCameraPos;
             public Quaternion ShadowCameraRotate;
+            public LayerMask ShadowCameraLayerMask;
             public float ShadowIntensity;
+            public bool Batcher;
         }
 
         public LinkedList<Renderer> ShadowRenderer{ get; private set; }
@@ -57,9 +59,10 @@ using Object = UnityEngine.Object;
         ///     自身用的相机数据
         /// </summary>
         private UniversalAdditionalCameraData m_cameraData;
-        
 
-        private ProjectorShadowPass m_casterPass;
+        private ProjectorConfig _config;
+
+        private ScriptableRenderPass m_casterPass;
         
         private GameObject m_parentObj;
         private static readonly int ShadowTex = Shader.PropertyToID ("_ShadowTex");
@@ -111,7 +114,9 @@ using Object = UnityEngine.Object;
         /// <summary>
         ///     初始化
         /// </summary>
-        public void Init (ProjectorConfig config, Material material){
+        public void Init (ProjectorConfig config, Material material) {
+            _config = config;
+            
             //--------------------------------------------创建对象--------------------------------------------
             if (!m_parentObj){
                 m_parentObj = new GameObject ("Projector shadow");
@@ -205,7 +210,7 @@ using Object = UnityEngine.Object;
             m_projectorForLwrp.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             //--------------------------------------------Camera属性设置--------------------------------------------
             //m_camera.cullingMask = 0;
-            m_camera.cullingMask = 1 << LayerMask.NameToLayer("GenerateShadow"); // 批量设置
+            m_camera.cullingMask = config.ShadowCameraLayerMask;
             m_camera.depth = -100;
             m_camera.clearFlags = CameraClearFlags.SolidColor;
             m_camera.targetTexture = m_cameraRT;
@@ -213,18 +218,33 @@ using Object = UnityEngine.Object;
             //--------------------------------------------其他设置--------------------------------------------
             m_shadowCasterMat = new Material (Shader.Find ("BokeGame/ProjectShadowCaster_2D"));
             //m_shadowCasterMat = new Material (BY_AssetUtilU5.GetAsset(0,"Common/shader@/ProjectShadowCaster_2D.shader") as Shader);
-            m_casterPass = new ProjectorShadowPass (RenderPassEvent.AfterRenderingTransparents, ShadowRenderer, m_shadowCasterMat);
+            if (_config.Batcher)
+            {
+                m_casterPass = new ProjectorShadowPassBatcher (RenderPassEvent.AfterRenderingTransparents, ShadowRenderer, m_shadowCasterMat);
+            }
+            else
+            {
+                m_casterPass = new ProjectorShadowPass (RenderPassEvent.AfterRenderingTransparents, ShadowRenderer, m_shadowCasterMat);
+            }
         }
 
         public void EnableShadow (){
             m_parentObj.SetActive (true);
-            //RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            //RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+            if (_config.Batcher)
+            {
+                return;
+            }
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
         public void DisableShadow (){
             m_parentObj.SetActive (false);
-            //RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            if (_config.Batcher)
+            {
+                return;
+            }
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
         }
 
         /// <summary>

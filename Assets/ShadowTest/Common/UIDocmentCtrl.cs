@@ -28,9 +28,14 @@ namespace ShadowTest {
             Custom,
             ProjectorShadow
         }
-        
-        float deltaTime = 0.0f;
-        
+
+        public int initGenerateCount = 500;
+        public int frameCount = 100; // 要计算的帧数
+
+        private float deltaTime = 0.0f;
+        private float totalTime = 0f;
+        private float averageFrameRate = 0.0f;
+
         private void Awake() {
             QualitySettings.SetQualityLevel((int)sceneType, true);
         }
@@ -54,12 +59,31 @@ namespace ShadowTest {
             //初始化内容显示
             UpdateLabelText();
 
+            _txtGenerate.value = initGenerateCount;
+            GenerateGos();
+            
             InvokeRepeating(nameof(UpdateDebugInfo), 0f, 0.5f);
         }
 
         private void Update()
         {
             deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
+            
+            // 累加每一帧的时间
+            if (Time.frameCount > frameCount)
+            {
+                totalTime += Time.deltaTime;
+            }
+            averageFrameRate = (Time.frameCount - frameCount) / totalTime;
+
+            /*// 累加每一帧的时间
+            totalTime += Time.deltaTime;
+            // 当累加到指定帧数时，计算平均帧数并输出
+            if (Time.frameCount % frameCount == 0)
+            {
+                averageFrameRate = frameCount / totalTime;
+                totalTime = 0f; // 重置累加时间
+            }*/
         }
  
         private void OnBtnGenerateClick(ClickEvent evt) {
@@ -119,7 +143,7 @@ namespace ShadowTest {
 
         private void UpdateDebugInfo() {
 #if UNITY_EDITOR
-            _txtDebugInfo.text = $"{1.0f / deltaTime:0.0} fps, {UnityStats.drawCalls} drawCall, {UnityStats.batches} batches, {UnityStats.setPassCalls} setPassCalls";
+            _txtDebugInfo.text = $"{UnityStats.drawCalls} drawCall, {UnityStats.batches} batches, {UnityStats.setPassCalls} setPassCalls, {1.0f / deltaTime:0.0} fps, avg {averageFrameRate:0.0} fps";
 #endif
         }
     }
