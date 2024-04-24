@@ -61,7 +61,7 @@ namespace ShadowTest {
             UpdateLabelText();
 
             _txtGenerate.value = initGenerateCount;
-            GenerateGos();
+            Invoke(nameof(GenerateGos), 0.1f);
             
             InvokeRepeating(nameof(UpdateDebugInfo), 0f, 0.5f);
         }

@@ -30,10 +30,4 @@ public class SetupProjectorShadow : MonoBehaviour {
 
         projectorShadow.EnableShadow();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

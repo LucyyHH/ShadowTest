@@ -30,7 +30,7 @@ using Object = UnityEngine.Object;
             public bool Batcher;
         }
 
-        public LinkedList<Renderer> ShadowRenderer{ get; private set; }
+        public LinkedList<Renderer> ShadowRenderer{ get; private set; } = new LinkedList<Renderer> ();
         private Material m_shadowCasterMat;
 
         /// <summary>
@@ -143,8 +143,6 @@ using Object = UnityEngine.Object;
                     }
                 };
                 //--------------------------------------------准备各种组件--------------------------------------------
-                if (ShadowRenderer == null)
-                    ShadowRenderer = new LinkedList<Renderer> ();
                 if (m_urpProjector == null)
                     m_urpProjector = projectorObj.AddComponent<Projector> ();
                 if (m_projectorForLwrp == null)
