@@ -120,6 +120,8 @@ namespace ShadowTest {
                 for(var j = 0; j < length; j++) {
                     // 判断是否达到数量要求
                     if(i * length + j >= _txtGenerate.value) {
+                        GetComponent<IGenerateComplete>()?.Callback(_gameObjects);
+                        
                         return;
                     }
                     
@@ -131,7 +133,7 @@ namespace ShadowTest {
                     _gameObjects.Add(go);
                 }
             }
-
+            
             GetComponent<IGenerateComplete>()?.Callback(_gameObjects);
         }
 
