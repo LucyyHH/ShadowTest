@@ -1098,7 +1098,7 @@ MonoBehaviour:
   - {fileID: 3862829661469340043, guid: 013fa0d55df1c3841b8c569db9dd1ba6, type: 3}
   - {fileID: 7904713484118923825, guid: bc872a222baa3e541acaf7d390c1e9aa, type: 3}
   - {fileID: 6067091920609783031, guid: cf7f1989a74b86c4d8527d5676d887eb, type: 3}
-  initGenerateCount: 10000
+  initGenerateCount: 500
   frameCount: 100
 --- !u!114 &1874842755
 MonoBehaviour:
