@@ -46,7 +46,7 @@ namespace HLLR {
                 _mFilteringSettings = FilteringSettings.defaultValue;
                 _mFilteringSettings.layerMask = layerMask;
                 //_mFilteringSettings.renderingLayerMask = 2U;
-                _mFilteringSettings.renderQueueRange = RenderQueueRange.opaque;
+                _mFilteringSettings.renderQueueRange = RenderQueueRange.all;
                 //_mFilteringSettings = new FilteringSettings(RenderQueueRange.all);
             }
 
