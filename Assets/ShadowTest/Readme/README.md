@@ -4,25 +4,24 @@
 ProjectShadow不光需要一个额外的相机去 生成RT图，同时当前这种方式生成RT图时，每个需要影子的mesh都需要一个DrawCall（包括SetPassCall），而且生成影子时接受影子mesh中每个不能合批的都会增加一个DrawCall（包括SetPassCall）   
 可以修改ProjectorShadowPass来实现SRPBatching批量绘制RT图，但后面生成影子的可能要修改投影器插件的逻辑（URP没有自带的投影器）
 
-Custom方式，先在编辑器下生成一个贴图来近似当前场景的高度图，同时使用SRPBatching批量生成影子，根据数量不同会有几个SetPassCall（几千个mesh只需要三四个），每个需要影子的mesh需要一个DrawCall（但不包括SetPassCall）
+优化后的平面阴影Custom方式，先在编辑器下生成一个贴图来近似当前场景的高度图，同时使用SRPBatching批量生成影子，根据数量不同会有几个SetPassCall（几千个mesh只需要三四个），每个需要影子的mesh需要一个DrawCall（但不包括SetPassCall）
 
 ### 性能数据对比
-|            |                                                                                             |                                                                                |
-|:----------:|:-------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------:|
-|  500个mesh  |                    ![Nop_500.gif](Resources%2FNop%2FNop_500.gif)<br/>无影子                    |       ![Custom_500.gif](Resources%2FCustom%2FCustom_500.gif)<br/>Custom        |
-|     \      |   ![PS_SRP_500.gif](Resources%2FProjectorShadow%2FPS_SRP_500.gif) <br/> ProjectShadow_SRP   |   ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)!<br/>ProjectShadow   |
-| 1000个mesh  |                   ![Nop_1000.gif](Resources%2FNop%2FNop_1000.gif)<br/>无影子                   |      ![Custom_1000.gif](Resources%2FCustom%2FCustom_1000.gif)<br/>Custom       |
-|     \      |  ![PS_SRP_1000.gif](Resources%2FProjectorShadow%2FPS_SRP_1000.gif) <br/> ProjectShadow_SRP  |  ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)!<br/>ProjectShadow  |
-| 2000个mesh  |                   ![Nop_2000.gif](Resources%2FNop%2FNop_2000.gif)<br/>无影子                   |      ![Custom_2000.gif](Resources%2FCustom%2FCustom_2000.gif)<br/>Custom       |
-|     \      |  ![PS_SRP_2000.gif](Resources%2FProjectorShadow%2FPS_SRP_2000.gif) <br/> ProjectShadow_SRP  |  ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)!<br/>ProjectShadow  |
-| 5000个mesh  |                   ![Nop_5000.gif](Resources%2FNop%2FNop_5000.gif)<br/>无影子                   |      ![Custom_5000.gif](Resources%2FCustom%2FCustom_5000.gif)<br/>Custom       |
-|     \      |  ![PS_SRP_5000.gif](Resources%2FProjectorShadow%2FPS_SRP_5000.gif) <br/> ProjectShadow_SRP  |  ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)!<br/>ProjectShadow  |
-| 10000个mesh |                  ![Nop_10000.gif](Resources%2FNop%2FNop_10000.gif)<br/>无影子                  |     ![Custom_10000.gif](Resources%2FCustom%2FCustom_10000.gif)<br/>Custom      |
-|     \      | ![PS_SRP_10000.gif](Resources%2FProjectorShadow%2FPS_SRP_10000.gif) <br/> ProjectShadow_SRP | ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)!<br/>ProjectShadow |
+|   mesh个数   |                            无影子和优化后的平面阴影性能数据                             |                                    投影器阴影普通版本和SRP合批版本性能数据                                    |
+|:----------:|:-----------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------:|
+|  500个mesh  |          ![Nop_500.gif](Resources%2FNop%2FNop_500.gif)<br/>无影子          |         ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)!<br/>ProjectShadow          |
+|     \      |   ![Custom_500.gif](Resources%2FCustom%2FCustom_500.gif)<br/>优化后的平面阴影   |   ![PS_SRP_500.gif](Resources%2FProjectorShadow%2FPS_SRP_500.gif) <br/> ProjectShadow_SRP   |
+| 1000个mesh  |         ![Nop_1000.gif](Resources%2FNop%2FNop_1000.gif)<br/>无影子         |        ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)!<br/>ProjectShadow         |
+|     \      |  ![Custom_1000.gif](Resources%2FCustom%2FCustom_1000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_1000.gif](Resources%2FProjectorShadow%2FPS_SRP_1000.gif) <br/> ProjectShadow_SRP  |
+| 2000个mesh  |         ![Nop_2000.gif](Resources%2FNop%2FNop_2000.gif)<br/>无影子         |        ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)!<br/>ProjectShadow         |
+|     \      |  ![Custom_2000.gif](Resources%2FCustom%2FCustom_2000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_2000.gif](Resources%2FProjectorShadow%2FPS_SRP_2000.gif) <br/> ProjectShadow_SRP  |
+| 5000个mesh  |         ![Nop_5000.gif](Resources%2FNop%2FNop_5000.gif)<br/>无影子         |        ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)!<br/>ProjectShadow         |
+|     \      |  ![Custom_5000.gif](Resources%2FCustom%2FCustom_5000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_5000.gif](Resources%2FProjectorShadow%2FPS_SRP_5000.gif) <br/> ProjectShadow_SRP  |
+| 10000个mesh |        ![Nop_10000.gif](Resources%2FNop%2FNop_10000.gif)<br/>无影子        |       ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)!<br/>ProjectShadow        |
+|     \      | ![Custom_10000.gif](Resources%2FCustom%2FCustom_10000.gif)<br/>优化后的平面阴影 | ![PS_SRP_10000.gif](Resources%2FProjectorShadow%2FPS_SRP_10000.gif) <br/> ProjectShadow_SRP |
 
 
-
-## 使用
+## 使用方式
 1. 创建生成高度图的Asset
 
    <img alt="Step1_1" src="Resources/Custom/Step1_1.png" width="1000"/>
