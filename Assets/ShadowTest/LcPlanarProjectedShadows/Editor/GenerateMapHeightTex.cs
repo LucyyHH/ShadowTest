@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
-namespace ShadowTest.Custom {
+namespace ShadowTest.Custom.Editor {
     [CreateAssetMenu(fileName = "GenerateMapHeightTex", menuName = "ScriptableObject/GenerateMapHeightTex", order = 0)]
     public class GenerateMapHeightTex : ScriptableObject {
         [Header("GameObject")]
