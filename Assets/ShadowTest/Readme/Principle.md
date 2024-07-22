@@ -6,40 +6,6 @@ ProjectShadow不光需要一个额外的相机去 生成RT图，同时当前这�
 
 优化后的平面阴影Custom方式，先在编辑器下生成一个贴图来近似当前场景的高度图，同时使用SRPBatching批量生成影子，根据数量不同会有几个SetPassCall（几千个mesh只需要三四个），每个需要影子的mesh需要一个DrawCall（但不包括SetPassCall）
 
-### 性能数据对比
-|   mesh个数   |                            无影子和优化后的平面阴影性能数据                             |                                    投影器阴影普通版本和SRP合批版本性能数据                                    |
-|:----------:|:-----------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------:|
-|  500个mesh  |          ![Nop_500.gif](Resources%2FNop%2FNop_500.gif)<br/>无影子          |         ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)!<br/>ProjectShadow          |
-|     \      |   ![Custom_500.gif](Resources%2FCustom%2FCustom_500.gif)<br/>优化后的平面阴影   |   ![PS_SRP_500.gif](Resources%2FProjectorShadow%2FPS_SRP_500.gif) <br/> ProjectShadow_SRP   |
-| 1000个mesh  |         ![Nop_1000.gif](Resources%2FNop%2FNop_1000.gif)<br/>无影子         |        ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)!<br/>ProjectShadow         |
-|     \      |  ![Custom_1000.gif](Resources%2FCustom%2FCustom_1000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_1000.gif](Resources%2FProjectorShadow%2FPS_SRP_1000.gif) <br/> ProjectShadow_SRP  |
-| 2000个mesh  |         ![Nop_2000.gif](Resources%2FNop%2FNop_2000.gif)<br/>无影子         |        ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)!<br/>ProjectShadow         |
-|     \      |  ![Custom_2000.gif](Resources%2FCustom%2FCustom_2000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_2000.gif](Resources%2FProjectorShadow%2FPS_SRP_2000.gif) <br/> ProjectShadow_SRP  |
-| 5000个mesh  |         ![Nop_5000.gif](Resources%2FNop%2FNop_5000.gif)<br/>无影子         |        ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)!<br/>ProjectShadow         |
-|     \      |  ![Custom_5000.gif](Resources%2FCustom%2FCustom_5000.gif)<br/>优化后的平面阴影  |  ![PS_SRP_5000.gif](Resources%2FProjectorShadow%2FPS_SRP_5000.gif) <br/> ProjectShadow_SRP  |
-| 10000个mesh |        ![Nop_10000.gif](Resources%2FNop%2FNop_10000.gif)<br/>无影子        |       ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)!<br/>ProjectShadow        |
-|     \      | ![Custom_10000.gif](Resources%2FCustom%2FCustom_10000.gif)<br/>优化后的平面阴影 | ![PS_SRP_10000.gif](Resources%2FProjectorShadow%2FPS_SRP_10000.gif) <br/> ProjectShadow_SRP |
-
-
-## 使用方式
-1. 创建生成高度图的Asset
-
-   <img alt="Step1_1" src="Resources/Custom/Step1_1.png" width="1000"/>
-   <img alt="Step1_2" src="Resources/Custom/Step1_2.png" width="500"/>
-   <img alt="Step1_3" src="Resources/Custom/Step1_3.png" width="500"/>
-2. 拖入需要生成高度图的Prefab，配置需要生成高度go的layer、分辨率、路径等，点击“生成”按钮生成材质球
-
-   <img alt="Step2_1" src="Resources/Custom/Step2_1.png" width="500"/>
-3. 在Universal Renderer Data中添加Render Feature，将2生成的材质球拖到Proj Shadow Material，并配置需要生成阴影的Layer
-
-   <img alt="Step3_1" src="Resources/Custom/Step3_1.png" width="500"/>
-4. （可选）固定灯光方向
-
-   <img alt="Step4_1" src="Resources/Custom/Step4_1.png" width="500"/>
-5. （可选）针对复杂度高的地形，勾选“使用高度偏移”来缓解阴影因精度问题导致穿透到模型里的问题
-
-   <img alt="Step5_1" src="Resources/Custom/Step5_1.png" width="500"/>
-
 ## 实现思路
 使用多线程计算缩短生成时间
 ### 第一种方式，垂直方向的高度图生成，可以旋转灯光方向（以不准确的方式估计）
