@@ -1,7 +1,7 @@
 ﻿# 平坦地形固定镜头视角的影子绘制
 
 ## 两种方式对比
-ProjectShadow不光需要一个额外的相机去生成RT图，同时当前这种方式生成RT图时，每个需要影子的mesh都需要一个DrawCall（包括SetPassCall），而且生成影子时接受影子mesh中每个不能合批的都会增加一个DrawCall（包括SetPassCall）   
+ProjectShadow不光需要一个额外的相机去 生成RT图，同时当前这种方式生成RT图时，每个需要影子的mesh都需要一个DrawCall（包括SetPassCall），而且生成影子时接受影子mesh中每个不能合批的都会增加一个DrawCall（包括SetPassCall）   
 可以修改ProjectorShadowPass来实现SRPBatching批量绘制RT图，但后面生成影子的可能要修改投影器插件的逻辑（URP没有自带的投影器）
 
 Custom方式，先在编辑器下生成一个贴图来近似当前场景的高度图，同时使用SRPBatching批量生成影子，根据数量不同会有几个SetPassCall（几千个mesh只需要三四个），每个需要影子的mesh需要一个DrawCall（但不包括SetPassCall）
@@ -14,14 +14,18 @@ Custom方式，先在编辑器下生成一个贴图来近似当前场景的高�
 |  ProjectShadow_SRP  | ![PS_SRP_500.gif](Resources%2FProjectorShadow%2FPS_SRP_500.gif) | ![PS_SRP_1000.gif](Resources%2FProjectorShadow%2FPS_SRP_1000.gif) | ![PS_SRP_2000.gif](Resources%2FProjectorShadow%2FPS_SRP_2000.gif) | ![PS_SRP_5000.gif](Resources%2FProjectorShadow%2FPS_SRP_5000.gif)  | ![PS_SRP_10000.gif](Resources%2FProjectorShadow%2FPS_SRP_10000.gif) |
 |    ProjectShadow    |     ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)     |     ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)     |     ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)     |     ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)      |     ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)     |
 
-|                        |                                                                                      |                                                                                      |
-|:----------------------:|:------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-|      500个mesh          |                ![Nop_500.gif](Resources%2FNop%2FNop_500.gif) <br/>无影子                |              ![Nop_1000.gif](Resources%2FNop%2FNop_1000.gif)<br/>Custom              |
-|                        |         ![Nop_500.gif](Resources%2FNop%2FNop_500.gif)     <br/>ProjectShadow_SRP    |          ![Nop_1000.gif](Resources%2FNop%2FNop_1000.gif)<br/>ProjectShadow           |
-|       1000个mesh        |                ![Custom_500.gif](Resources%2FCustom%2FCustom_500.gif)                |               ![Custom_1000.gif](Resources%2FCustom%2FCustom_1000.gif)               |     ![Custom_2000.gif](Resources%2FCustom%2FCustom_2000.gif)      |      ![Custom_5000.gif](Resources%2FCustom%2FCustom_5000.gif)      |     ![Custom_10000.gif](Resources%2FCustom%2FCustom_10000.gif)      |
-|       2000个mesh        |           ![PS_SRP_500.gif](Resources%2FProjectorShadow%2FPS_SRP_500.gif)            |          ![PS_SRP_1000.gif](Resources%2FProjectorShadow%2FPS_SRP_1000.gif)           | ![PS_SRP_2000.gif](Resources%2FProjectorShadow%2FPS_SRP_2000.gif) | ![PS_SRP_5000.gif](Resources%2FProjectorShadow%2FPS_SRP_5000.gif)  | ![PS_SRP_10000.gif](Resources%2FProjectorShadow%2FPS_SRP_10000.gif) |
-|       5000个mesh        |               ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)                |              ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)               |     ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)     |     ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)      |     ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)     |
-|       10000个mesh       |               ![PS_500.gif](Resources%2FProjectorShadow%2FPS_500.gif)                |              ![PS_1000.gif](Resources%2FProjectorShadow%2FPS_1000.gif)               |     ![PS_2000.gif](Resources%2FProjectorShadow%2FPS_2000.gif)     |     ![PS_5000.gif](Resources%2FProjectorShadow%2FPS_5000.gif)      |     ![PS_10000.gif](Resources%2FProjectorShadow%2FPS_10000.gif)     |
+|            |                                                                                            |                                                                               |
+|:----------:|:------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------:|
+|  500个mesh  |                    [Nop_500.mp4](Resources%2FNop%2FNop_500.mp4)<br/>无影子                    |       [Custom_500.mp4](Resources%2FCustom%2FCustom_500.mp4)<br/>Custom        |
+|     \      |   [PS_SRP_500.mp4](Resources%2FProjectorShadow%2FPS_SRP_500.mp4) <br/> ProjectShadow_SRP   |   [PS_500.mp4](Resources%2FProjectorShadow%2FPS_500.mp4)!<br/>ProjectShadow   |
+| 1000个mesh  |                   [Nop_1000.mp4](Resources%2FNop%2FNop_1000.mp4)<br/>无影子                   |      [Custom_1000.mp4](Resources%2FCustom%2FCustom_1000.mp4)<br/>Custom       |
+|     \      |  [PS_SRP_1000.mp4](Resources%2FProjectorShadow%2FPS_SRP_1000.mp4) <br/> ProjectShadow_SRP  |  [PS_1000.mp4](Resources%2FProjectorShadow%2FPS_1000.mp4)!<br/>ProjectShadow  |
+| 2000个mesh  |                   [Nop_2000.mp4](Resources%2FNop%2FNop_2000.mp4)<br/>无影子                   |      [Custom_2000.mp4](Resources%2FCustom%2FCustom_2000.mp4)<br/>Custom       |
+|     \      |  [PS_SRP_2000.mp4](Resources%2FProjectorShadow%2FPS_SRP_2000.mp4) <br/> ProjectShadow_SRP  |  [PS_2000.mp4](Resources%2FProjectorShadow%2FPS_2000.mp4)!<br/>ProjectShadow  |
+| 5000个mesh  |                   [Nop_5000.mp4](Resources%2FNop%2FNop_5000.mp4)<br/>无影子                   |      [Custom_5000.mp4](Resources%2FCustom%2FCustom_5000.mp4)<br/>Custom       |
+|     \      |  [PS_SRP_5000.mp4](Resources%2FProjectorShadow%2FPS_SRP_5000.mp4) <br/> ProjectShadow_SRP  |  [PS_5000.mp4](Resources%2FProjectorShadow%2FPS_5000.mp4)!<br/>ProjectShadow  |
+| 10000个mesh |                  [Nop_10000.mp4](Resources%2FNop%2FNop_10000.mp4)<br/>无影子                  |     [Custom_10000.mp4](Resources%2FCustom%2FCustom_10000.mp4)<br/>Custom      |
+|     \      | [PS_SRP_10000.mp4](Resources%2FProjectorShadow%2FPS_SRP_10000.mp4) <br/> ProjectShadow_SRP | [PS_10000.mp4](Resources%2FProjectorShadow%2FPS_10000.mp4)!<br/>ProjectShadow |
 
 
 
